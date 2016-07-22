@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -127,7 +128,13 @@ func saveSession(w http.ResponseWriter, u oauth2.Profile) {
 
 func main() {
 
-	var addr = flag.String("addr", ":8080", "application address")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "5000"
+	}
+	port2 := fmt.Sprintf(":%s", port)
+
+	var addr = flag.String("addr", port2, "application address")
 	flag.Parse()
 
 	//
