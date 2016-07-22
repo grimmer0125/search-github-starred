@@ -79,8 +79,11 @@ func mustAuth(handler http.Handler) http.Handler {
 }
 
 func init() {
+
+	callbackURL := os.Getenv("CallbackURL")
+
 	oauth2.WithProviders(
-		github.New(oauth2.NewConfig(oauth2.GITHUB, "http://localhost:8080/auth/callback/"+oauth2.GITHUB)),
+		github.New(oauth2.NewConfig(oauth2.GITHUB, callbackURL+oauth2.GITHUB)),
 		// facebook.New(oauth2.NewConfig(oauth2.FACEBOOK, "http://localhost:8080/auth/callback/"+oauth2.FACEBOOK)),
 		// google.New(oauth2.NewConfig(oauth2.GOOGLE, "http://localhost:8080/auth/callback/"+oauth2.GOOGLE)),
 		// slack.New(oauth2.NewConfig(oauth2.SLACK, "http://localhost:8080/auth/callback/"+oauth2.SLACK)),
