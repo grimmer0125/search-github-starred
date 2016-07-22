@@ -1,0 +1,22 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "remotePath": "",
+            "preLaunchTask": "buildclient",
+            "port": 2345,
+            "host": "127.0.0.1",
+            "program": "${workspaceRoot}",
+            "env": {
+                "GITHUB_CLIENT_ID" : "",
+                "GITHUB_CLIENT_SECRET": "",
+                "CallbackURL": "http://localhost:5000/auth/callback/"
+            },
+            "args": []
+        }
+    ]
+}
