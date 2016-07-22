@@ -23,6 +23,7 @@
     "eslint-plugin-react": "^5.2.2"
   },
   "scripts": {
+    "postinstall": "./node_modules/.bin/webpack --config ./config/webpack.config.dev.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-client": "./node_modules/.bin/webpack --config ./config/webpack.config.dev.js"
   },
