@@ -27,8 +27,32 @@
 			"Rev": "ee05b128a739a0fb76c7ebd3ae4810c1de808d6d"
 		},
 		{
+			"ImportPath": "github.com/tmtk75/go-oauth2/oauth2",
+			"Rev": "edd856d430f15d44e79c4fd3a01a2fc7bd9d2a02"
+		},
+		{
+			"ImportPath": "github.com/tmtk75/go-oauth2/oauth2/github",
+			"Rev": "edd856d430f15d44e79c4fd3a01a2fc7bd9d2a02"
+		},
+		{
 			"ImportPath": "golang.org/x/net/context",
 			"Rev": "4d38db76854b199960801a1734443fd02870d7e1"
+		},
+		{
+			"ImportPath": "golang.org/x/net/websocket",
+			"Rev": "4d38db76854b199960801a1734443fd02870d7e1"
+		},
+		{
+			"ImportPath": "golang.org/x/oauth2",
+			"Rev": "1364adb2c63445016c5ed4518fc71f6a3cda6169"
+		},
+		{
+			"ImportPath": "golang.org/x/oauth2/github",
+			"Rev": "1364adb2c63445016c5ed4518fc71f6a3cda6169"
+		},
+		{
+			"ImportPath": "golang.org/x/oauth2/internal",
+			"Rev": "1364adb2c63445016c5ed4518fc71f6a3cda6169"
 		},
 		{
 			"ImportPath": "gopkg.in/go-playground/validator.v8",
