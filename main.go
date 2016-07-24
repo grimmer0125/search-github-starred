@@ -146,6 +146,7 @@ func main() {
 
 	//
 	r := gin.Default()
+
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Static("/build-client", "build-client")
@@ -170,6 +171,15 @@ func main() {
 			time.Sleep(1 * time.Second)
 		}
 	})))
+
+	r.NoRoute(func(c *gin.Context) {
+		w := c.Writer
+		w.Header()["Location"] = []string{"/"}
+		w.WriteHeader(http.StatusTemporaryRedirect)
+	})
+	// r.NoRoute(func(c *gin.Context) {
+	// 	c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
+	// })
 
 	//
 	log.Println("Start web server. Port: ", *addr)
