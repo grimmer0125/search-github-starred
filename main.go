@@ -1,11 +1,3 @@
-// 	router := gin.New()
-// 	router.Use(gin.Logger())
-// 	router.LoadHTMLGlob("templates/*.tmpl.html")
-
-// 	router.GET("/", func(c *gin.Context) {
-// 		c.HTML(http.StatusOK, "index.tmpl.html", nil)
-// 	})
-
 package main
 
 import (
@@ -23,13 +15,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/net/websocket"
-
 	"github.com/tmtk75/go-oauth2/oauth2"
-	// "github.com/tmtk75/go-oauth2/oauth2/facebook"
 	"github.com/tmtk75/go-oauth2/oauth2/github"
-	// "github.com/tmtk75/go-oauth2/oauth2/google"
-	// "github.com/tmtk75/go-oauth2/oauth2/slack"
+	"golang.org/x/net/websocket"
 )
 
 type templateHandler struct {
@@ -96,20 +84,35 @@ func init() {
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	segs := strings.Split(r.URL.Path, "/")
 	action := segs[2]
-	provider := segs[3]
+	providerName := segs[3]
 	switch action {
 	case "login":
-		loginURL := oauth2.ProviderByName(provider).Config().AuthCodeURL("state")
+		loginURL := oauth2.ProviderByName(providerName).Config().AuthCodeURL("state")
 		w.Header().Set("Location", loginURL)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	case "callback":
-		p := oauth2.ProviderByName(provider)
-		u, err := oauth2.ProfileByCode(p, r.FormValue("code"))
+		code := r.FormValue("code")
+
+		provider := oauth2.ProviderByName(providerName)
+		profile, err := oauth2.ProfileByCode(provider, code)
+
 		if err != nil {
-			log.Println("Failed to Profile", provider, "-", err)
+			log.Println("Failed to Profile", providerName, "-", err)
 		}
 
-		saveSession(w, u)
+		// grimmer
+		// token, err := provider.Config().Exchange(xoauth2.NoContext, code)
+		// fmt.Print("token2:", token)
+		// fmt.Print("access token:", profile.Token())
+		// profile, err := provider.Profile(t) -> send request
+
+		fmt.Print("github access token:", profile.Token().AccessToken)
+		_, err = getStarredInfo(profile.Token().AccessToken)
+		if err != nil {
+			log.Println("cant not get starred info.")
+		}
+
+		saveSession(w, profile)
 		w.Header()["Location"] = []string{"/"}
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	default:
@@ -122,7 +125,6 @@ func saveSession(w http.ResponseWriter, u oauth2.Profile) {
 	msg, _ := json.Marshal(map[string]interface{}{
 		"name": u.Name(),
 	})
-	log.Println("msg: ", string(msg))
 	http.SetCookie(w, &http.Cookie{
 		Name:    "auth",
 		Value:   base64.StdEncoding.EncodeToString([]byte(msg)),
