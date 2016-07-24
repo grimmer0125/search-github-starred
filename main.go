@@ -38,14 +38,17 @@ type templateHandler struct {
 	templ    *template.Template
 }
 
+//    {{.UserData.name}}
+
 func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t.once.Do(func() {
-		t.templ = template.Must(template.ParseFiles(filepath.Join("client/partials", t.filename)))
+		t.templ = template.Must(template.ParseFiles(filepath.Join("client", t.filename)))
 	})
 	data := map[string]interface{}{
 		"Host": r.Host,
 	}
 	if authCookie, err := r.Cookie("auth"); err == nil {
+		// v.name !!
 		var v map[string]interface{}
 		log.Println("authCookie: ", authCookie)
 		b, _ := base64.StdEncoding.DecodeString(authCookie.Value)
@@ -101,7 +104,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	case "callback":
 		p := oauth2.ProviderByName(provider)
-		// p := oauth2.ProviderByName("github")
 		u, err := oauth2.ProfileByCode(p, r.FormValue("code"))
 		if err != nil {
 			log.Println("Failed to Profile", provider, "-", err)
@@ -147,7 +149,7 @@ func main() {
 	r.Static("/build-client", "build-client")
 
 	r.GET("/", gin.WrapH(mustAuth(&templateHandler{filename: "index.html"})))
-	r.GET("/login", gin.WrapH(&templateHandler{filename: "login.html"}))
+	r.GET("/login", gin.WrapH(&templateHandler{filename: "templates/login.html"}))
 	r.GET("/logout", func(c *gin.Context) {
 		http.SetCookie(c.Writer, &http.Cookie{
 			Name:   "auth",
