@@ -56,6 +56,7 @@ type authHandler struct {
 
 func (h *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if _, err := r.Cookie("auth"); err == http.ErrNoCookie {
+		fmt.Println("try redirect1")
 		w.Header().Set("location", "/login")
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	} else if err != nil {
@@ -88,6 +89,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	switch action {
 	case "login":
 		loginURL := oauth2.ProviderByName(providerName).Config().AuthCodeURL("state")
+		fmt.Println("try redirect2")
 		w.Header().Set("Location", loginURL)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	case "callback":
@@ -111,7 +113,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println("cant not get starred info.")
 		}
-
+		fmt.Println("try redirect3")
 		saveSession(w, profile)
 		w.Header()["Location"] = []string{"/"}
 		w.WriteHeader(http.StatusTemporaryRedirect)
@@ -155,6 +157,7 @@ func main() {
 	r.GET("/", gin.WrapH(mustAuth(&templateHandler{filename: "index.html"})))
 	r.GET("/login", gin.WrapH(&templateHandler{filename: "templates/login.html"}))
 	r.GET("/logout", func(c *gin.Context) {
+		fmt.Println("try redirect4")
 		http.SetCookie(c.Writer, &http.Cookie{
 			Name:   "auth",
 			Value:  "",
@@ -173,19 +176,40 @@ func main() {
 		}
 	})))
 
-	r.NoRoute(func(c *gin.Context) {
-		w := c.Writer
-		w.Header()["Location"] = []string{"/"}
-		w.WriteHeader(http.StatusTemporaryRedirect)
-	})
+	// r.NoRoute(func(c *gin.Context) {
+	// 	fmt.Println("try redirect5")
+	// 	w := c.Writer
+	// 	w.Header()["Location"] = []string{"/"}
+	// 	w.WriteHeader(http.StatusTemporaryRedirect)
+	// })
 
 	// r.NoRoute(func(c *gin.Context) {
 	// 	c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
 	// })
+
+	// signalChan := make(chan os.Signal, 1)
+	// // signal.Notify(signalChan, os.Interrupt)
+	// signal.Notify(signalChan, os.Interrupt, syscall.s
+	// 	syscall.SIGHUP,
+	// 	syscall.SIGINT,
+	// 	syscall.SIGTERM,
+	// 	syscall.SIGQUIT)
+
+	// go func() {
+	// 	for _ = range signalChan {
+	// 		fmt.Println("\nReceived an interrupt, stopping services...\n")
+	// 		os.Exit(1)
+	// 	}
+	// }()
+	// http://nathanleclaire.com/blog/2014/08/24/handling-ctrl-c-interrupt-signal-in-golang-programs/
+	// https://gist.github.com/reiki4040/be3705f307d3cd136e85
 
 	//
 	log.Println("Start web server. Port: ", *addr)
 	if err := r.Run(*addr); err != nil {
 		log.Fatal("Run:", err)
 	}
+
+	log.Println("end of main")
+
 }
