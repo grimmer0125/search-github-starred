@@ -107,7 +107,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		// profile, err := provider.Profile(t) -> send request
 
 		fmt.Print("github access token:", profile.Token().AccessToken)
-		_, err = getStarredInfo(profile.Token().AccessToken)
+		_, err = getStarredInfo(profile.Nickname(), profile.Token().AccessToken)
 		if err != nil {
 			log.Println("cant not get starred info.")
 		}

@@ -2,16 +2,81 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/algolia/algoliasearch-client-go/algoliasearch"
 )
 
-func getRepoReadme(token string, repoURLList []string) (map[string]interface{}, error) {
+func queryAlgolia(queryStr, starredBy string) {
+	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
 
-	log.Println("repo list len:", len(repoURLList))
+	index := client.InitIndex("githubRepo")
+
+	params := algoliasearch.Map{
+		"attributesToSnippet": []string{"description:40"},
+		"facetFilters":        "starredBy" + starredBy, // "firstname:Jimmie",
+	}
+
+	res, err := index.Search(queryStr, params)
+
+	if err != nil {
+		log.Println("error:", err)
+	}
+
+	b, err := json.Marshal(res)
+	fmt.Println("search result:", string(b))
+}
+
+func sendToAlgolia(repoList []*algoliasearch.Object) {
+
+	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
+	index := client.InitIndex("githubRepo")
+
+	setting := make(map[string]interface{})
+	setting["attributesForFaceting"] = []string{"starredBy"}
+	index.SetSettings(setting)
+
+	// object1 := algoliasearch.Object{
+	// 	"firstname": "Jimmie apple tree",
+	// 	"lastname":  "Barninger",
+	// }
+	//
+	// object2 := algoliasearch.Object{
+	// 	"firstname": "Jimmie",
+	// 	"lastname":  "Barninger",
+	// }
+
+	// content, _ := ioutil.ReadFile("contacts.json")
+	var objects []algoliasearch.Object
+	// // if err := json.Unmarshal(content, &objects); err != nil {
+	// // 	return
+	// // }
+	// objects = append(objects, object1)
+	// objects = append(objects, object2)
+	//
+
+	for _, object := range repoList {
+		objects = append(objects, *object)
+	}
+
+	_, err := index.AddObjects(objects)
+	if err != nil {
+		log.Println("add to algolia error", err)
+	}
+	log.Println("add to algolia ok")
+}
+
+//  string list
+//->
+
+func getRepoReadme(token string, repoList []*algoliasearch.Object) (map[string]interface{}, error) {
+
+	log.Println("repo list len:", len(repoList))
 	// log.Println("total:", repoURLList)
 	// https://github.com/mhart/react-server-example
 
@@ -22,7 +87,8 @@ func getRepoReadme(token string, repoURLList []string) (map[string]interface{}, 
 	//get { return NSURL(string: "https://api.github.com/repos/\(self.ownerName)/\(self.name)/readme") }
 
 	for i := 0; i < 5; i++ {
-		readmeURL := repoURLList[i] + "/readme"
+		repo := *repoList[i]
+		readmeURL := repo["repoURL"].(string) + "/readme"
 
 		req, err := http.NewRequest("GET", readmeURL, nil)
 		if err != nil {
@@ -42,28 +108,21 @@ func getRepoReadme(token string, repoURLList []string) (map[string]interface{}, 
 			return nil, err
 		}
 
-		log.Println("readmd body:", string(b))
+		// log.Println("readmd body:", string(b))
+		repo["readmd"] = string(b)
 
 		res.Body.Close()
 	}
 
+	sendToAlgolia(repoList)
 	return nil, nil
 }
 
-func getStarredInfo(token string) (map[string]interface{}, error) {
+func getStarredInfo(tokenOwner, token string) (map[string]interface{}, error) {
 
-	// 1
-	//   fmt.Println(strings.ContainsAny("Hello World", ",|"))
-	//
-	// 2
-	//   if strings.IndexFunc("HelloWorld", f) != -1 {
-	//
-	// 3
-	//     x := "chars@arefun"
-	//
-	//      i := strings.Index(x, "@")
+	log.Println("token:", token)
 
-	var repoURLList []string
+	var repoList []*algoliasearch.Object
 
 	for ifRun, pageIndex := true, 1; ifRun == true; pageIndex++ {
 		pageStr := strconv.Itoa(pageIndex)
@@ -98,7 +157,6 @@ func getStarredInfo(token string) (map[string]interface{}, error) {
 		ifRun = false
 		for _, link := range linkList {
 			i := strings.Index(link, "last")
-			log.Println("i:", i)
 
 			if i > -1 {
 				ifRun = true
@@ -117,16 +175,28 @@ func getStarredInfo(token string) (map[string]interface{}, error) {
 		// log.Println("response body:", string(b))
 		// type mytype []map[string]string
 
-		var repoList []map[string]interface{}
+		var repoOrigList []algoliasearch.Object
 
-		if err := json.Unmarshal(b, &repoList); err != nil {
+		if err := json.Unmarshal(b, &repoOrigList); err != nil {
 			log.Println("can not parse repo list")
 		}
 		// fmt.Println("repo", repoList)
 
-		for _, repo := range repoList {
-			repoURLList = append(repoURLList, repo["url"].(string))
+		for _, repo := range repoOrigList {
+
+			object := algoliasearch.Object{
+				"repoURL":     repo["url"],
+				"repoName":    repo["name"],
+				"ownerName":   repo["owner"].(map[string]interface{})["login"],
+				"ownerURL":    repo["html_url"],
+				"starredBy":   tokenOwner,
+				"description": repo["description"],
+			}
+			// repo["url"].(string)
+			repoList = append(repoList, &object)
 		}
+		// "description": "Golang标准库。对于程序员而言，标准库与语言本身同样重要，它好比一个百宝箱，能为各种常见的任务提供完美的解决方案。以示例驱动的方式讲解Golang的标准库。",
+		// "homepage"
 
 		// switch ctype {
 		// case "application/json", "text/javascript":
@@ -136,7 +206,7 @@ func getStarredInfo(token string) (map[string]interface{}, error) {
 		// }
 	}
 
-	getRepoReadme(token, repoURLList)
+	getRepoReadme(token, repoList)
 
 	// link := "Link: <https://api.github.com/user/5940941/starred?per_page=50&page=2>; rel=\"next\", <https://api.github.com/user/5940941/starred?per_page=50&page=5>; rel=\"last\""
 
@@ -150,3 +220,19 @@ func getStarredInfo(token string) (map[string]interface{}, error) {
 
 	return nil, nil //map[string]interface{}{}, fmt.Errorf("unknown Content-Type: %v", ctype)
 }
+
+// url
+// description ?
+// readme ?
+// owner - html_url
+// name (repo-name)
+// owner -login (owner-login)
+// starredBy - (原始的那個人)
+
+// type GitHubRepo struct {
+// 	URL       string `json:"url"`
+// 	Name      string `json:"name"`
+// 	OwnerName string `json:"ownerName"`
+// 	OwnerURL  string `json:"ownerURL"`
+// 	StarredBy string `json:"starredBy"`
+// }
