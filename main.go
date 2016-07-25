@@ -150,6 +150,7 @@ func main() {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 	r.Static("/build-client", "build-client")
+	r.Static("/styles", "client/styles")
 
 	r.GET("/", gin.WrapH(mustAuth(&templateHandler{filename: "index.html"})))
 	r.GET("/login", gin.WrapH(&templateHandler{filename: "templates/login.html"}))
@@ -177,6 +178,7 @@ func main() {
 		w.Header()["Location"] = []string{"/"}
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	})
+
 	// r.NoRoute(func(c *gin.Context) {
 	// 	c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
 	// })
