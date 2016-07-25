@@ -41,6 +41,66 @@ func sendToAlgolia(repoList []*algoliasearch.Object) {
 	setting["attributesForFaceting"] = []string{"starredBy"}
 	index.SetSettings(setting)
 
+	// var objects []algoliasearch.Object
+
+	var i int
+	i = 0
+	for _, object := range repoList {
+		i++
+		// objects = append(objects, *object)
+		_, err := index.AddObject(*object)
+		if err != nil {
+			log.Println("add to algolia error:", err, ";time:", i)
+		} else {
+			log.Println("add to algolia ok, time:", i)
+		}
+	}
+
+	//times := len(objects) / 50
+
+	// total := len(objects)
+	// for i := 0; ; {
+
+	// 	var subSlice []algoliasearch.Object
+	// 	if i <= (total - 1) {
+	// 		var final int
+	// 		if (i + 50) < total {
+	// 			final = i + 50
+	// 		} else {
+	// 			final = total
+	// 		}
+
+	// 		// final := (i+50)>=total?(i+50):total
+
+	// 		subSlice = objects[i:final] //index 1到 <4 index
+	// 		log.Printf("from %d to  %d\n", i, final)
+	// 	} else {
+	// 		log.Println("alreay send all")
+	// 		break
+	// 	}
+	// 	log.Println("len of subslice:", len(subSlice))
+
+	// 	_, err := index.AddObjects(subSlice)
+	// 	if err != nil {
+	// 		log.Println("add to algolia error:", err, ";time:", i)
+	// 	} else {
+	// 		log.Println("add to algolia ok, time:", i)
+	// 	}
+
+	// 	i = i + 50
+	// }
+
+}
+
+func sendToAlgolia2(repoList []*algoliasearch.Object) {
+
+	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
+	index := client.InitIndex("githubRepo")
+
+	setting := make(map[string]interface{})
+	setting["attributesForFaceting"] = []string{"starredBy"}
+	index.SetSettings(setting)
+
 	// object1 := algoliasearch.Object{
 	// 	"firstname": "Jimmie apple tree",
 	// 	"lastname":  "Barninger",
@@ -64,11 +124,46 @@ func sendToAlgolia(repoList []*algoliasearch.Object) {
 		objects = append(objects, *object)
 	}
 
-	_, err := index.AddObjects(objects)
-	if err != nil {
-		log.Println("add to algolia error", err)
+	//times := len(objects) / 50
+
+	total := len(objects)
+	for i := 0; ; {
+
+		//0~49
+		//[0:50]
+
+		//0~48
+		//[0:49]
+
+		var subSlice []algoliasearch.Object
+		if i <= (total - 1) {
+			var final int
+			if (i + 50) < total {
+				final = i + 50
+			} else {
+				final = total
+			}
+
+			// final := (i+50)>=total?(i+50):total
+
+			subSlice = objects[i:final] //index 1到 <4 index
+			log.Printf("from %d to  %d\n", i, final)
+		} else {
+			log.Println("alreay send all")
+			break
+		}
+		log.Println("len of subslice:", len(subSlice))
+
+		_, err := index.AddObjects(subSlice)
+		if err != nil {
+			log.Println("add to algolia error:", err, ";time:", i)
+		} else {
+			log.Println("add to algolia ok, time:", i)
+		}
+
+		i = i + 50
 	}
-	log.Println("add to algolia ok")
+
 }
 
 //  string list
@@ -76,7 +171,8 @@ func sendToAlgolia(repoList []*algoliasearch.Object) {
 
 func getRepoReadme(token string, repoList []*algoliasearch.Object) (map[string]interface{}, error) {
 
-	log.Println("repo list len:", len(repoList))
+	lenList := len(repoList)
+	log.Println("repo list len:", lenList)
 	// log.Println("total:", repoURLList)
 	// https://github.com/mhart/react-server-example
 
@@ -86,9 +182,9 @@ func getRepoReadme(token string, repoList []*algoliasearch.Object) (map[string]i
 	//repo name
 	//get { return NSURL(string: "https://api.github.com/repos/\(self.ownerName)/\(self.name)/readme") }
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < lenList; i++ {
 		repo := *repoList[i]
-		readmeURL := repo["repoURL"].(string) + "/readme"
+		readmeURL := repo["apiURL"].(string) + "/readme"
 
 		req, err := http.NewRequest("GET", readmeURL, nil)
 		if err != nil {
@@ -185,12 +281,14 @@ func getStarredInfo(tokenOwner, token string) (map[string]interface{}, error) {
 		for _, repo := range repoOrigList {
 
 			object := algoliasearch.Object{
-				"repoURL":     repo["url"],
+				"apiURL":      repo["url"],
+				"repoURL":     repo["html_url"],
 				"repoName":    repo["name"],
 				"ownerName":   repo["owner"].(map[string]interface{})["login"],
-				"ownerURL":    repo["html_url"],
+				"ownerURL":    repo["owner"].(map[string]interface{})["html_url"],
 				"starredBy":   tokenOwner,
 				"description": repo["description"],
+				"homepage":    repo["homepage"],
 			}
 			// repo["url"].(string)
 			repoList = append(repoList, &object)
