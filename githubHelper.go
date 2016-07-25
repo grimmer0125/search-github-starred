@@ -32,7 +32,7 @@ func queryAlgolia(queryStr, starredBy string) {
 	fmt.Println("search result:", string(b))
 }
 
-func sendToAlgolia(repoList []*algoliasearch.Object) {
+func sendToAlgolia2(repoList []*algoliasearch.Object) {
 
 	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
 	index := client.InitIndex("githubRepo")
@@ -41,58 +41,25 @@ func sendToAlgolia(repoList []*algoliasearch.Object) {
 	setting["attributesForFaceting"] = []string{"starredBy"}
 	index.SetSettings(setting)
 
-	// var objects []algoliasearch.Object
-
 	var i int
 	i = 0
 	for _, object := range repoList {
 		i++
 		// objects = append(objects, *object)
-		_, err := index.AddObject(*object)
+		// _, err := index.AddObject(*object)
+
+		b, err := json.Marshal(*object)
+		log.Println("repo size:", len(b)) //110589
+
 		if err != nil {
 			log.Println("add to algolia error:", err, ";time:", i)
 		} else {
 			log.Println("add to algolia ok, time:", i)
 		}
 	}
-
-	//times := len(objects) / 50
-
-	// total := len(objects)
-	// for i := 0; ; {
-
-	// 	var subSlice []algoliasearch.Object
-	// 	if i <= (total - 1) {
-	// 		var final int
-	// 		if (i + 50) < total {
-	// 			final = i + 50
-	// 		} else {
-	// 			final = total
-	// 		}
-
-	// 		// final := (i+50)>=total?(i+50):total
-
-	// 		subSlice = objects[i:final] //index 1到 <4 index
-	// 		log.Printf("from %d to  %d\n", i, final)
-	// 	} else {
-	// 		log.Println("alreay send all")
-	// 		break
-	// 	}
-	// 	log.Println("len of subslice:", len(subSlice))
-
-	// 	_, err := index.AddObjects(subSlice)
-	// 	if err != nil {
-	// 		log.Println("add to algolia error:", err, ";time:", i)
-	// 	} else {
-	// 		log.Println("add to algolia ok, time:", i)
-	// 	}
-
-	// 	i = i + 50
-	// }
-
 }
 
-func sendToAlgolia2(repoList []*algoliasearch.Object) {
+func sendToAlgolia3(repoList []*algoliasearch.Object) {
 
 	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
 	index := client.InitIndex("githubRepo")
@@ -121,10 +88,9 @@ func sendToAlgolia2(repoList []*algoliasearch.Object) {
 	//
 
 	for _, object := range repoList {
+
 		objects = append(objects, *object)
 	}
-
-	//times := len(objects) / 50
 
 	total := len(objects)
 	for i := 0; ; {
@@ -166,49 +132,128 @@ func sendToAlgolia2(repoList []*algoliasearch.Object) {
 
 }
 
-//  string list
-//->
+func sendToAlgolia(repoList []*algoliasearch.Object) {
 
+	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
+	index := client.InitIndex("githubRepo")
+
+	setting := make(map[string]interface{})
+	setting["attributesForFaceting"] = []string{"starredBy"}
+	index.SetSettings(setting)
+
+	var objects []algoliasearch.Object
+
+	for _, object := range repoList {
+
+		b, _ := json.Marshal(*object)
+		// log.Println("repo size:", len(b)) //110589
+
+		if len(b) < 100000 {
+			// objects = append(objects, *object)
+		} else {
+			log.Println("record size is larger thant 100K, may ~ 10K after minified json")
+		}
+	}
+
+	_, err := index.AddObjects(objects)
+	if err != nil {
+		log.Println("add to algolia error:", err)
+	} else {
+		log.Println("add to algolia ok")
+	}
+}
+
+func getReadme(token string, repoList []*algoliasearch.Object, j int, channel chan int) {
+
+	log.Println("log:", j)
+	repo := *repoList[j]
+	readmeURL := repo["apiURL"].(string) + "/readme"
+
+	req, err := http.NewRequest("GET", readmeURL, nil)
+	if err != nil {
+		log.Println("err:", err)
+		// return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/vnd.github.raw")
+
+	c := http.Client{}
+	res, err := c.Do(req)
+	if err != nil {
+		log.Println("err:", err)
+
+		// return nil, err
+	}
+
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Println("err:", err)
+
+		// return nil, err
+	}
+
+	repo["readmd"] = string(b)
+
+	log.Println("get readme:", j)
+
+	res.Body.Close()
+
+	channel <- j
+
+}
+
+// log.Println("total:", repoURLList)
+// https://github.com/mhart/react-server-example
+
+// headers: self.authorizedRequestHeaders(with: ["Accept": "application/vnd.github.raw"]))
+//  "full_name": "sandstorm-io/sandstorm",
+//grimmer0125
+//repo name
+//get { return NSURL(string: "https://api.github.com/repos/\(self.ownerName)/\(self.name)/readme") }
 func getRepoReadme(token string, repoList []*algoliasearch.Object) (map[string]interface{}, error) {
 
 	lenList := len(repoList)
-	log.Println("repo list len:", lenList)
-	// log.Println("total:", repoURLList)
-	// https://github.com/mhart/react-server-example
 
-	// headers: self.authorizedRequestHeaders(with: ["Accept": "application/vnd.github.raw"]))
-	//  "full_name": "sandstorm-io/sandstorm",
-	//grimmer0125
-	//repo name
-	//get { return NSURL(string: "https://api.github.com/repos/\(self.ownerName)/\(self.name)/readme") }
+	log.Println("try getting all readme:", lenList)
+
+	c := make(chan int, lenList)
+	checkList := make([]int, lenList)
+	log.Println("0 check list:", checkList)
 
 	for i := 0; i < lenList; i++ {
-		repo := *repoList[i]
-		readmeURL := repo["apiURL"].(string) + "/readme"
-
-		req, err := http.NewRequest("GET", readmeURL, nil)
-		if err != nil {
-			return nil, err
-		}
-		req.Header.Set("Authorization", "Bearer "+token)
-		req.Header.Set("Accept", "application/vnd.github.raw")
-
-		c := http.Client{}
-		res, err := c.Do(req)
-		if err != nil {
-			return nil, err
-		}
-
-		b, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		// log.Println("readmd body:", string(b))
-		repo["readmd"] = string(b)
-
-		res.Body.Close()
+		go getReadme(token, repoList, i, c)
 	}
+
+	for i := range c {
+		fmt.Println("channel data start:", i)
+
+		checkList[i] = 1
+		allGet := true
+		log.Println("check list:", checkList)
+
+		// for element := range checkList { //element will be bool
+		// 	if element == 0 {
+		// 		allGet = false
+		// 		break
+		// 	}
+		// }
+
+		for j := 0; j < len(checkList); j++ {
+			if checkList[j] == 0 {
+				allGet = false
+				break
+			}
+		}
+
+		if allGet == true {
+			log.Println("check list:get all")
+			close(c)
+		} else {
+			log.Println("check list:not get all")
+		}
+	}
+
+	log.Println("after getting all readme")
 
 	sendToAlgolia(repoList)
 	return nil, nil
