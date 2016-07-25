@@ -1,0 +1,14 @@
+// The base styles are not in the BEM style
+
+// Make the base HTML elements display consistently across all browsers
+@import 'normalize';
+@include normalize();
+
+// make everything use border-box so there are no surprises
+* { box-sizing: border-box; }
+html,
+body { height: 100%; }
+
+body { background: #e5e5e5; }
+
+@import 'typography';

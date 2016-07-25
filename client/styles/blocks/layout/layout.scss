@@ -1,0 +1,31 @@
+// block
+.layout {
+  display: flex;
+  flex: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+// block modifiers
+.layout--column { flex-direction: column; }
+.layout--row { flex-direction: row; }
+.layout--vertically-center {
+  display: flex;
+  align-items: center;
+}
+
+.layout--horizontally-centered {
+  margin: 0 auto;
+}
+
+// elements
+.layout__flex {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+.layout__fixed { position: relative; }
