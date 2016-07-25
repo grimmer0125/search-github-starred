@@ -134,7 +134,7 @@ func saveSession(w http.ResponseWriter, u oauth2.Profile) {
 }
 
 func main() {
-
+	fmt.Println("start main")
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "5000"

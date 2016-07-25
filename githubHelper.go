@@ -118,7 +118,7 @@ func sendToAlgolia3(repoList []*algoliasearch.Object) {
 			log.Println("alreay send all")
 			break
 		}
-		log.Println("len of subslice:", len(subSlice))
+		log.Println("len of algolia subslice:", len(subSlice))
 
 		_, err := index.AddObjects(subSlice)
 		if err != nil {
@@ -141,7 +141,7 @@ func sendToAlgolia(repoList []*algoliasearch.Object) {
 	setting["attributesForFaceting"] = []string{"starredBy"}
 	index.SetSettings(setting)
 
-	var objects []algoliasearch.Object
+	// var objects []algoliasearch.Object
 
 	for _, object := range repoList {
 
@@ -155,12 +155,12 @@ func sendToAlgolia(repoList []*algoliasearch.Object) {
 		}
 	}
 
-	_, err := index.AddObjects(objects)
-	if err != nil {
-		log.Println("add to algolia error:", err)
-	} else {
-		log.Println("add to algolia ok")
-	}
+	// _, err := index.AddObjects(objects)
+	// if err != nil {
+	// 	log.Println("add to algolia error:", err)
+	// } else {
+	log.Println("add to algolia ok")
+	// }
 }
 
 func getReadme(token string, repoList []*algoliasearch.Object, j int, channel chan int) {
@@ -218,18 +218,18 @@ func getRepoReadme(token string, repoList []*algoliasearch.Object) (map[string]i
 
 	c := make(chan int, lenList)
 	checkList := make([]int, lenList)
-	log.Println("0 check list:", checkList)
+	// log.Println("0 check list:", checkList)
 
 	for i := 0; i < lenList; i++ {
 		go getReadme(token, repoList, i, c)
 	}
 
 	for i := range c {
-		fmt.Println("channel data start:", i)
+		// fmt.Println("channel data start:", i)
 
 		checkList[i] = 1
 		allGet := true
-		log.Println("check list:", checkList)
+		// log.Println("check list:", checkList)
 
 		// for element := range checkList { //element will be bool
 		// 	if element == 0 {
@@ -249,7 +249,7 @@ func getRepoReadme(token string, repoList []*algoliasearch.Object) (map[string]i
 			log.Println("check list:get all")
 			close(c)
 		} else {
-			log.Println("check list:not get all")
+			// log.Println("check list:not get all")
 		}
 	}
 
