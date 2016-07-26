@@ -49,7 +49,7 @@ export function* fetchStatusAsync(action) {
     yield put(getReposStatusSucceeded(FetchingStatus.FETCHED)); // or
   } else {
     if (dataJSON && dataJSON.hasOwnProperty('status')) {
-      yield put(getReposStatusSucceeded(dataJSON.status)); // or
+      yield put(getReposStatusSucceeded(dataJSON)); // or
     }
   }
 

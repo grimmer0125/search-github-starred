@@ -2,11 +2,11 @@ import {
   GET_REPOS_STATUS_SUCCEEDED,
 } from './actionTypes';
 
-function getReposStatusSucceeded(status) {
+function getReposStatusSucceeded(result) {
   return {
     type: GET_REPOS_STATUS_SUCCEEDED,
     payload: {
-      status,
+      result,
     },
   };
 }

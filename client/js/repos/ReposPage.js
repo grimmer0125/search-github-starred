@@ -14,7 +14,6 @@ class ReposPage extends React.Component {
     // const { businessId, getBillingData } = this.props;
     if (!this.hasData()) {
       this.startPoll();
-    //   getBillingData(businessId);
     }
   }
 
@@ -27,14 +26,20 @@ class ReposPage extends React.Component {
   componentWillReceiveProps(nextProps) {
     console.log('componentWillReceiveProps');
     if (this.props.repos !== nextProps.repos) {
-      clearTimeout(this.timeout);
       console.log('different Props');
+
 
       // Optionally do something with data
 
       // if (!nextProps.isFetching) {
       //   this.startPoll();
       // }
+    }
+    clearTimeout(this.timeout);
+
+    if (!this.hasData()) {
+      console.log('start timer in receive props ');
+      this.startPoll();
     }
   }
 
@@ -46,15 +51,15 @@ class ReposPage extends React.Component {
 //  this.timeout = setTimeout(() => this.props.dataActions.dataFetch(), 15000);
   startPoll() {
     const { dispatch } = this.props;
-    console.log('0 timer runs !!!');
+    // console.log('status timer runs !!!');
 
-    dispatch({ type: FETCH_STARRRED_STATUS, payload: { text: 'Do something.' } });
+    // dispatch({ type: FETCH_STARRRED_STATUS, payload: { text: 'Do something.' } });
 
-    // this.timeout = setTimeout(() => {
-    //   console.log('timer runs !!!');
-    //   debugger;
-    //   dispatch({ type: FETCH_STARRRED_STATUS, payload: { text: 'Do something.' } });
-    // }, 2000);
+    this.timeout = setTimeout(() => {
+      console.log('timer runs !!!');
+      // debugger;
+      dispatch({ type: FETCH_STARRRED_STATUS, payload: { text: 'Do something.' } });
+    }, 2000);
   }
 
   hasData() {
@@ -66,7 +71,7 @@ class ReposPage extends React.Component {
   renderComponents() {
     return (
       <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
-        hello world
+        Indexing is finished, start to query.
       </div>
     );
   }
@@ -75,8 +80,8 @@ class ReposPage extends React.Component {
     // use a common loading screen
     // className="page"
     let statusStr = '';
-    console.log('status in render;', this.props);
-    const { fetchingStatus } = this.props.repos;
+    // console.log('status in render;', this.props);
+    const { fetchingStatus, numOfStarred } = this.props.repos;
 
     switch (fetchingStatus) {
       case FetchingStatus.NOTSTART:
@@ -86,7 +91,11 @@ class ReposPage extends React.Component {
         statusStr = 'It is fetching, wait a moement...';
         break;
       case FetchingStatus.INDEXING:
-        statusStr = 'It is indexing, wait a mement...';
+        if (numOfStarred > 0) {
+          statusStr = 'It is indexing ' + numOfStarred + ', wait a mement...';
+        } else {
+          statusStr = 'It is indexing, wait a mement...';
+        }
         break;
       default:
         statusStr = 'unknown status';
@@ -127,20 +136,14 @@ function test(state) {
 export function mapStateToProps(state) {
   return {
     repos: test(state),
-    // businessId: state.business.id,
   };
 }
 
-
-//
 // export function mapDispatchToProps(dispatch) {
 //   return bindActionCreators({
-//     getBillingData: actions.getBillingData,
-//     openChangeCreditCardModal: changeCreditCard.actions.openChangeCreditCardModal,
-//     openMakePaymentModal: makePayment.actions.openMakePaymentModal,
+//     xxx: actions.xxx
+
 //   }, dispatch);
 // }
 //
-// export default connect(mapStateToProps, mapDispatchToProps)(BillingPage);
-
 export default connect(mapStateToProps)(ReposPage);
