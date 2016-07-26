@@ -43,7 +43,10 @@ func (user *GitHubUser) GetStarredInfo(tokenOwner, token string) {
 	// fmt.Println("total repo:", string(b))
 
 	// try to indexing
-	// indexAPI.sendToAlgolia(repoList)
+	err := SendToAlgolia(repoList)
+	if err == nil {
+		user.status = INDEXED
+	}
 }
 
 // 一個表
