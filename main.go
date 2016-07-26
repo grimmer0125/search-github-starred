@@ -178,6 +178,18 @@ func main() {
 		}
 	})))
 
+	r.GET("/repos", func(c *gin.Context) {
+		// name := c.Param("name")
+		// action := c.Param("action")
+		// message := name + " is " + action
+
+		// w := c.Writer
+		// w.Header()["Location"] = []string{"/login"}
+		// w.WriteHeader(http.StatusTemporaryRedirect)
+		message := "get your repos request !!!!!!"
+		c.String(http.StatusOK, message)
+	})
+
 	// r.NoRoute(func(c *gin.Context) {
 	// 	fmt.Println("try redirect5")
 	// 	w := c.Writer

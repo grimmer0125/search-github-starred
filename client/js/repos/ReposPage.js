@@ -27,7 +27,7 @@ class ReposPage extends React.Component {
   componentWillReceiveProps(nextProps) {
     console.log('componentWillReceiveProps');
     if (this.props.repos !== nextProps.repos) {
-      // clearTimeout(this.timeout);
+      clearTimeout(this.timeout);
       console.log('different Props');
 
       // Optionally do something with data
@@ -42,6 +42,7 @@ class ReposPage extends React.Component {
   // this.props.dispatch({ type, payload: { sn } });
   // dispatch({type: 'USER_FETCH_REQUESTED', payload: {userId}})
 
+  // ref: http://notjoshmiller.com/ajax-polling-in-react-with-redux/
 //  this.timeout = setTimeout(() => this.props.dataActions.dataFetch(), 15000);
   startPoll() {
     const { dispatch } = this.props;

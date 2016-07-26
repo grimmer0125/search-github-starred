@@ -11,7 +11,8 @@ export default function configureStore(initialState) {
     rootReducer,
     initialState,
     compose(
-      applyMiddleware(sagaMiddleware)
+      applyMiddleware(sagaMiddleware),
+      window.devToolsExtension ? window.devToolsExtension() : f => f
     )
   );
 

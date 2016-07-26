@@ -4,6 +4,7 @@ import { put, call, select } from 'redux-saga/effects';
 import FetchingStatus from './constants';
 
 import actions from './actions';
+import api from '../api';
 
 const { getReposStatusSucceeded } = actions;
 
@@ -29,8 +30,25 @@ export function* fetchStatusAsync(action) {
 // const user = yield call(Api.fetchUser, action.payload.userId);
   // yield call(tryDropResource, rid);
 
+  const res = yield call(api.getReposStatus);
+
+  // debugger;
+  console.log('get res in saga:', res);
+  //
+  let dataJSON = null;
+
+  try {
+    dataJSON = JSON.parse(res);
+    console.log('data:', dataJSON);
+  } catch (e) {
+    console.log('not json');
+  }
+
+  if (res === 'get your repos request !!!!!!') {
+    yield put(getReposStatusSucceeded(FetchingStatus.FETCHED)); // or
+  }
+
 // step 2
-  yield put(getReposStatusSucceeded(FetchingStatus.FETCHED)); // or
 // yield put({type: "USER_FETCH_SUCCEEDED", user: user});
 
   // }
