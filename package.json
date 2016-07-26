@@ -13,6 +13,7 @@
     "css-loader": "^0.23.1",
     "eslint-config-airbnb": "^9.0.1",
     "html-webpack-plugin": "^2.22.0",
+    "material-ui": "^0.15.2",
     "node-sass": "^3.8.0",
     "normalize-scss": "^5.0.3",
     "postcss-loader": "^0.9.1",

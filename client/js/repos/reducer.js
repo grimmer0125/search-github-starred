@@ -1,4 +1,24 @@
-//
+import FetchingStatus from './constants';
+
+const initialState = {
+  error: null,
+  fetchingStatus: FetchingStatus.NOTSTART,
+  numStarred: -1,
+};
+
+export default function repos(state = initialState, action) {
+
+  console.log("into reducer");
+  // switch (action.type) {
+  //   case '@@router/LOCATION_CHANGE': {
+  //     const location = action.payload.pathname;
+  //     return Object.assign({}, state, { location });
+  //   }
+    // default:
+  return state;
+  // }
+}
+
 // import * as ActionTypes from '../actions/deviceAction';
 //
 // const unknownSN = '';

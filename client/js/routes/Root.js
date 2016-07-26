@@ -10,7 +10,8 @@ import { Provider } from 'react-redux';
 import { syncHistoryWithStore } from 'react-router-redux';
 
 import configureStore from '../app/configureStore.js';
-import MainPage from '../main/MainPage';
+import Repos from '../repos';
+// const { component: Snackbar } = snackbar;
 
 const store = configureStore();
 const history = syncHistoryWithStore(browserHistory, store);
@@ -20,7 +21,7 @@ export default function Root() {
     <Provider store={store}>
       <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
         <Router history={history}>
-          <Route path="/" component={MainPage} />
+          <Route path="/" component={Repos.component} />
         </Router>
       </div>
     </Provider>
