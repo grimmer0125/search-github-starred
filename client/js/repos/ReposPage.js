@@ -69,9 +69,19 @@ class ReposPage extends React.Component {
   }
 
   renderComponents() {
+    const { numOfStarred } = this.props.repos;
+
+    let statusStr = '';
+
+    if (numOfStarred > 0) {
+      statusStr = 'Indexing is finished. Total: ' + numOfStarred + ', start to query';
+    } else {
+      statusStr = 'Indexing is finished, start to query';
+    }
+
     return (
       <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
-        Indexing is finished, start to query.
+        {statusStr}
       </div>
     );
   }
