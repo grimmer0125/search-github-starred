@@ -8,13 +8,13 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
-	"syscall"
 	"text/template"
 	"time"
+
+	"errors"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tmtk75/go-oauth2/oauth2"
@@ -31,6 +31,8 @@ type templateHandler struct {
 //    {{.UserData.name}}
 
 func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Println("/login or /")
+
 	t.once.Do(func() {
 		t.templ = template.Must(template.ParseFiles(filepath.Join("client", t.filename)))
 	})
@@ -57,8 +59,8 @@ type authHandler struct {
 }
 
 func (h *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Println("/-1")
 	if _, err := r.Cookie("auth"); err == http.ErrNoCookie {
-		fmt.Println("try redirect1")
 		w.Header().Set("location", "/login")
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	} else if err != nil {
@@ -72,26 +74,15 @@ func mustAuth(handler http.Handler) http.Handler {
 	return &authHandler{next: handler}
 }
 
-func init() {
-
-	callbackURL := os.Getenv("CallbackURL")
-
-	oauth2.WithProviders(
-		github.New(oauth2.NewConfig(oauth2.GITHUB, callbackURL+oauth2.GITHUB)),
-		// facebook.New(oauth2.NewConfig(oauth2.FACEBOOK, "http://localhost:8080/auth/callback/"+oauth2.FACEBOOK)),
-		// google.New(oauth2.NewConfig(oauth2.GOOGLE, "http://localhost:8080/auth/callback/"+oauth2.GOOGLE)),
-		// slack.New(oauth2.NewConfig(oauth2.SLACK, "http://localhost:8080/auth/callback/"+oauth2.SLACK)),
-	)
-}
-
 func loginHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("/auth*")
+
 	segs := strings.Split(r.URL.Path, "/")
 	action := segs[2]
 	providerName := segs[3]
 	switch action {
 	case "login":
 		loginURL := oauth2.ProviderByName(providerName).Config().AuthCodeURL("state")
-		fmt.Println("try redirect2")
 		w.Header().Set("Location", loginURL)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	case "callback":
@@ -104,18 +95,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println("Failed to Profile", providerName, "-", err)
 		}
 
-		// grimmer
-		// token, err := provider.Config().Exchange(xoauth2.NoContext, code)
-		// fmt.Print("token2:", token)
-		// fmt.Print("access token:", profile.Token())
-		// profile, err := provider.Profile(t) -> send request
-
 		fmt.Print("github access token:", profile.Token().AccessToken)
-		_, err = getStarredInfo(profile.Nickname(), profile.Token().AccessToken)
-		if err != nil {
-			log.Println("cant not get starred info.")
-		}
-		fmt.Println("try redirect3")
+
+		prepareUserStarredRepo(profile.Nickname(), profile.Token().AccessToken)
+
 		saveSession(w, profile)
 		w.Header()["Location"] = []string{"/"}
 		w.WriteHeader(http.StatusTemporaryRedirect)
@@ -127,14 +110,144 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 func saveSession(w http.ResponseWriter, u oauth2.Profile) {
 	msg, _ := json.Marshal(map[string]interface{}{
-		"name": u.Name(),
+		"name": u.Nickname(), //displayname, not account name
 	})
 	http.SetCookie(w, &http.Cookie{
 		Name:    "auth",
 		Value:   base64.StdEncoding.EncodeToString([]byte(msg)),
 		Path:    "/",
-		Expires: time.Now().Add(24 * time.Hour),
+		Expires: time.Now().AddDate(1, 0, 0), //Add(24 * time.Hour),
 	})
+}
+
+var userMap map[string]*GitHubUser
+var mux sync.Mutex
+
+func init() {
+	log.Println("main init !!!!!!")
+
+	callbackURL := os.Getenv("CallbackURL")
+
+	oauth2.WithProviders(
+		github.New(oauth2.NewConfig(oauth2.GITHUB, callbackURL+oauth2.GITHUB)),
+	)
+	// prepare userMap
+	userMap = make(map[string]*GitHubUser)
+	_ = userMap
+}
+func setupUserToMap(account string, user *GitHubUser) {
+	log.Println("set map, lock ")
+	mux.Lock()
+	userMap[account] = user
+	log.Println("map:", userMap)
+	mux.Unlock()
+	log.Println("set map, unlock ")
+
+}
+func getUserFromMap(account string) (*GitHubUser, error) {
+	log.Println("get map, lock ")
+
+	mux.Lock()
+	log.Println("map:", userMap)
+
+	defer mux.Unlock()
+	log.Println("get map, lock defer")
+
+	elem, ok := userMap[account]
+	if ok == true {
+		return elem, nil
+	}
+	return nil, errors.New("user does not exist")
+}
+
+func prepareUserStarredRepo(account string, token string) {
+	// account           string
+	// accessToken       string
+
+	// 之後再做1.
+	// 1. 如果再run當中的就不要再new/run了,
+	//
+	// 2. 假設前一個token還可以用,
+	// 那此時第二個同一user的token好像會已經先傳回去? 還像同時兩個token也還好,
+
+	user := GitHubUser{account, token, NOTSTART, 0, 0}
+	setupUserToMap(account, &user)
+	go user.GetStarredInfo(account, token)
+
+	// _, err = getStarredInfo(profile.Nickname(), profile.Token().AccessToken)
+	// if err != nil {
+	// 	log.Println("cant not get starred info.")
+	// }
+}
+
+func getReposHandler(c *gin.Context) {
+
+	log.Println("/repos")
+	r := c.Request
+	ok := false
+	message := "no valid auth"
+	log.Println("map len:", len(userMap))
+
+	log.Println("map:", userMap)
+	// message := ""
+
+	if userMap == nil {
+		log.Println("usermap is nil")
+	}
+
+	if authCookie, err := r.Cookie("auth"); err == nil {
+		// v.name !!
+		var v map[string]interface{}
+		log.Println("authCookie: ", authCookie)
+		b, _ := base64.StdEncoding.DecodeString(authCookie.Value)
+		log.Println("after decoded", string(b))
+		err := json.Unmarshal([]byte(b), &v)
+		log.Println("after decoded map", v)
+
+		if err != nil {
+			log.Fatalf("Failed to Unmarshal: %v\n", err)
+
+		} else if account, ok2 := v["name"]; ok2 == true {
+			account2 := account.(string)
+			log.Println("account2:", account2)
+			if user, _ := getUserFromMap(account2); user != nil {
+				log.Println("found out account:", user.account)
+				ok = true
+
+				// status            string
+				// numOfStarred      int
+
+				c.JSON(200, gin.H{
+					"status":       user.status,
+					"numOfStarred": user.numOfStarred,
+				})
+
+			} else {
+				log.Println("does not have the same key")
+			}
+		}
+
+		// msg, _ := json.Marshal(map[string]interface{}{
+		// 	"name": u.Nickname(), //displayname, not account name
+		// })
+	} else {
+		message = "does not have cookie"
+	}
+
+	if ok == false {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": message,
+		})
+	}
+
+	// name := c.Param("name")
+	// action := c.Param("action")
+	// message := name + " is " + action
+
+	// w := c.Writer
+	// message := "get your repos request !!!!!!"
+	// c.String(http.StatusOK, message)
+
 }
 
 func main() {
@@ -159,7 +272,6 @@ func main() {
 	r.GET("/", gin.WrapH(mustAuth(&templateHandler{filename: "index.html"})))
 	r.GET("/login", gin.WrapH(&templateHandler{filename: "templates/login.html"}))
 	r.GET("/logout", func(c *gin.Context) {
-		fmt.Println("try redirect4")
 		http.SetCookie(c.Writer, &http.Cookie{
 			Name:   "auth",
 			Value:  "",
@@ -178,61 +290,7 @@ func main() {
 		}
 	})))
 
-	r.GET("/repos", func(c *gin.Context) {
-		// name := c.Param("name")
-		// action := c.Param("action")
-		// message := name + " is " + action
-
-		// w := c.Writer
-		// w.Header()["Location"] = []string{"/login"}
-		// w.WriteHeader(http.StatusTemporaryRedirect)
-		message := "get your repos request !!!!!!"
-		c.String(http.StatusOK, message)
-	})
-
-	// r.NoRoute(func(c *gin.Context) {
-	// 	fmt.Println("try redirect5")
-	// 	w := c.Writer
-	// 	w.Header()["Location"] = []string{"/"}
-	// 	w.WriteHeader(http.StatusTemporaryRedirect)
-	// })
-
-	// r.NoRoute(func(c *gin.Context) {
-	// 	c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
-	// })
-
-	// signalChan := make(chan os.Signal, 1)
-	// // signal.Notify(signalChan, os.Interrupt)
-	// signal.Notify(signalChan, os.Interrupt, syscall.s
-	// 	syscall.SIGHUP,
-	// 	syscall.SIGINT,
-	// 	syscall.SIGTERM,
-	// 	syscall.SIGQUIT)
-
-	// go func() {
-	// 	for _ = range signalChan {
-	// 		fmt.Println("\nReceived an interrupt, stopping services...\n")
-	// 		os.Exit(1)
-	// 	}
-	// }()
-	// http://nathanleclaire.com/blog/2014/08/24/handling-ctrl-c-interrupt-signal-in-golang-programs/
-	// https://gist.github.com/reiki4040/be3705f307d3cd136e85
-
-	//
-
-	sigs := make(chan os.Signal, 1)
-	// done := make(chan bool, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		sig := <-sigs
-		fmt.Println("got !!!!!!!!!!")
-		fmt.Println(sig)
-		os.Exit(1)
-		// done <- true
-	}()
-	fmt.Println("awaiting signal")
-	// <-done
-	// fmt.Println("exiting")
+	r.GET("/repos", getReposHandler)
 
 	log.Println("Start web server. Port: ", *addr)
 	if err := r.Run(*addr); err != nil {

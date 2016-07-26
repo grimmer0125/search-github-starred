@@ -18,8 +18,9 @@ else if (window.location.hostname === '0.0.0.0') {
 // return fetch(tokenURL, { credentials: 'include' })
 
 function getReposStatus() {
-  console.log('remote url:', baseURL + '/repos');
-  return fetch(baseURL + '/repos').then(res => {
+  const completeURL = baseURL + '/repos';
+  console.log('remote url:', completeURL);
+  return fetch(completeURL, { credentials: 'include' }).then(res => {
     console.log('get the response');
     // console.log('res:', res.text());
     // debugger;
@@ -31,3 +32,12 @@ function getReposStatus() {
 export default {
   getReposStatus,
 };
+
+// function verifyValidationKey(key) {
+//   return api.get(`/key/${key}`);
+// }
+//
+// function submitValidationForm(email, key, password) {
+//   return api.post(`/key/${key}`, { email, password });
+// }
+//

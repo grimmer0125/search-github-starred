@@ -1,5 +1,6 @@
 import { takeEvery } from 'redux-saga';
-import { put, call, select } from 'redux-saga/effects';
+import { put, call } from 'redux-saga/effects'; // , select
+
 // import { ActionTypes } from '../actions/deviceAction';
 import FetchingStatus from './constants';
 
@@ -39,13 +40,17 @@ export function* fetchStatusAsync(action) {
 
   try {
     dataJSON = JSON.parse(res);
-    console.log('data:', dataJSON);
+    console.log('response json:', dataJSON);
   } catch (e) {
     console.log('not json');
   }
 
   if (res === 'get your repos request !!!!!!') {
     yield put(getReposStatusSucceeded(FetchingStatus.FETCHED)); // or
+  } else {
+    if (dataJSON && dataJSON.hasOwnProperty('status')) {
+      yield put(getReposStatusSucceeded(dataJSON.status)); // or
+    }
   }
 
 // step 2

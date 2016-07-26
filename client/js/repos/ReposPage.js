@@ -60,7 +60,7 @@ class ReposPage extends React.Component {
   hasData() {
     // const { starredRepos } = this.props;
     const starredRepos = this.props.repos;
-    return (!starredRepos.error && starredRepos.fetchingStatus === FetchingStatus.FETCHED);
+    return (!starredRepos.error && starredRepos.fetchingStatus === FetchingStatus.INDEXED);
   }
 
   renderComponents() {
@@ -80,13 +80,13 @@ class ReposPage extends React.Component {
 
     switch (fetchingStatus) {
       case FetchingStatus.NOTSTART:
-        statusStr = 'Indexing is not started yet';
+        statusStr = 'Fetching is not started yet';
         break;
       case FetchingStatus.FETCHING:
-        statusStr = 'Indexing, wait a moement...';
+        statusStr = 'It is fetching, wait a moement...';
         break;
-      case FetchingStatus.FETCHED:
-        statusStr = 'Indexing is ok...';
+      case FetchingStatus.INDEXING:
+        statusStr = 'It is indexing, wait a mement...';
         break;
       default:
         statusStr = 'unknown status';

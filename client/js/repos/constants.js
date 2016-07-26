@@ -1,7 +1,8 @@
 const FetchingStatus = {
   NOTSTART: 'NotStart',
   FETCHING: 'Fetching',
-  FETCHED: 'Fetched',
+  INDEXING: 'Indexing',
+  INDEXED: 'Indexed',
   ERROR: 'Error',
 };
 
