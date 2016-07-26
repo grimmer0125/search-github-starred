@@ -8,9 +8,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
 	"text/template"
 	"time"
 
@@ -205,6 +207,21 @@ func main() {
 	// https://gist.github.com/reiki4040/be3705f307d3cd136e85
 
 	//
+
+	sigs := make(chan os.Signal, 1)
+	// done := make(chan bool, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		sig := <-sigs
+		fmt.Println("got !!!!!!!!!!")
+		fmt.Println(sig)
+		os.Exit(1)
+		// done <- true
+	}()
+	fmt.Println("awaiting signal")
+	// <-done
+	// fmt.Println("exiting")
+
 	log.Println("Start web server. Port: ", *addr)
 	if err := r.Run(*addr); err != nil {
 		log.Fatal("Run:", err)

@@ -1,45 +1,54 @@
-// import { takeEvery } from 'redux-saga';
-// import { put, call, select } from 'redux-saga/effects';
-//
+import { takeEvery } from 'redux-saga';
+import { put, call, select } from 'redux-saga/effects';
 // import { ActionTypes } from '../actions/deviceAction';
+import FetchingStatus from './constants';
+
+import actions from './actions';
+
+const { getReposStatusSucceeded } = actions;
+
+import {
+  FETCH_STARRRED_STATUS,
+} from './actionTypes';
 // import { AppManager } from '../utils/AppManager.js';
 // import { getRidAliasFromState } from '../reducers/selectors';
 // import { fetchDevices } from '../actions/deviceAction.js';
-//
+
 // import {
 //   tryDropResource,
 //   tryDeleteSN,
 // } from '../actions/tryExofetch.js';
-//
-// // export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-//
-// // Our worker Saga:
-// export function* deleteDeviceAsync(action) {
-//   const sn = action.payload.sn;
-//   const ridAliased = yield select(getRidAliasFromState, sn);
-//   const rid = ridAliased.rid;
-//   const productID = AppManager.instance().getProductID();
-//
-//   if (rid) {
-//     // step 1
-//     yield call(tryDropResource, rid);
-//     // console.log("drop response:" + dropResponse); // [{"id":1,"status":"ok"}]
-//     // console.log('try to handle error case');
-//
-//     // step 2
-//     yield call(tryDeleteSN, productID, sn);
-//
-//     // http response header :205, reset and empty body means sueccess
-//     // and response shoulbe be undefined
-//
-//     yield put(fetchDevices());
-//   }
+
+// export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+// Our worker Saga:
+export function* fetchStatusAsync(action) {
+  console.log('into fetch statys middleware async');
+// step 1
+// async part, e.g. fetch
+// const user = yield call(Api.fetchUser, action.payload.userId);
+  // yield call(tryDropResource, rid);
+
+// step 2
+  yield put(getReposStatusSucceeded(FetchingStatus.FETCHED)); // or
+// yield put({type: "USER_FETCH_SUCCEEDED", user: user});
+
+  // }
+}
+
+// takeLatest : only one in the same time
+// teakeEvery: simultaneously
+// yield* takeLatest("USER_FETCH_REQUESTED", fetchUser);
+
+export function* watchFetchReposAsync() {
+  yield* takeEvery(FETCH_STARRRED_STATUS, fetchStatusAsync);
+}
+
+export default [
+  watchFetchReposAsync,
+  // ...changeCreditCard.sagas,
+];
+
+// export function* helloSaga() {
+//   console.log('Hello Sagas!');
 // }
-//
-// export function* watchIncrementAsync() {
-//   yield* takeEvery(ActionTypes.DELETE_DEVICE, deleteDeviceAsync);
-// }
-//
-// // export function* helloSaga() {
-// //   console.log('Hello Sagas!');
-// // }

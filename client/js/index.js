@@ -10,3 +10,6 @@ ReactDOM.render(
   <Root />,
   document.getElementById('app')
 );
+
+
+console.log('into index.js');

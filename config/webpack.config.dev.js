@@ -9,7 +9,7 @@ const PATHS = {
   app: path.resolve(__dirname, '../client/js'),
   styles: path.resolve(__dirname, '../client/styles'),
   build: path.resolve(__dirname, '../build-client'),
-  node_modules: path.resolve(__dirname, '../node_modules')
+  node_modules: path.resolve(__dirname, '../node_modules'),
 };
 
 // const plugins = [
@@ -69,7 +69,11 @@ module.exports = {
         exclude: /node_modules/,
 
         // loaders: ['react-hot', 'babel', 'eslint'],
-        loader: 'babel',
+        loader: 'babel-loader',
+        query: {
+          presets: ['es2015'],
+          plugins: ['transform-runtime'],
+        },
         // include: PATHS.app
       },
       {
@@ -88,16 +92,16 @@ module.exports = {
     ],
   },
   // plugins: plugins,
-  postcss: function() {
+  postcss() {
     return [autoprefixer({
-      browsers: ['last 2 versions']
-    })]
+      browsers: ['last 2 versions'],
+    })];
   },
   sassLoader: {
     includePaths: [
       path.join(PATHS.node_modules, 'normalize-scss', 'sass'),
-      path.join(PATHS.node_modules, 'normalize-scss', 'node_modules', 'support-for', 'sass')
-    ]
+      path.join(PATHS.node_modules, 'normalize-scss', 'node_modules', 'support-for', 'sass'),
+    ],
   },
   // devServer: {
   //   contentBase: path.resolve(__dirname, '../src'),
