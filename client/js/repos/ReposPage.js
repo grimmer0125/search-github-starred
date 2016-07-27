@@ -2,8 +2,7 @@ import React from 'react';
 import FetchingStatus from './constants';
 import { connect } from 'react-redux';
 import algoliasearch from 'algoliasearch';
-import { reduxForm } from 'redux-form';
-
+// import { reduxForm } from 'redux-form';
 // import { bindActionCreators } from 'redux';
 
 import {
@@ -24,18 +23,48 @@ class RepoList extends React.Component {
   }
 }
 
+const QueryStatus = {
+  NOTQUERY: 'NotQuery',
+  QUERYING: 'Querying',
+  QUERIED: 'Queried',
+};
+
 class ReposPage extends React.Component {
 
   constructor(props) {
     super(props);
 
-    this.state = { items: [], text: '' };
+    this.state = {
+      queryStats: QueryStatus.NOTQUERY,
+      hits: [],
+      total: 0,
+      totalPage: 0,
+      currentPage: 0,
+      text: '',
+      queryCursor: '',
+    };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.onChange = this.onChange.bind(this);
+    this.handleNext = this.handleNext.bind(this);
+    this.handlePrev = this.handlePrev.bind(this);
     // props.handleSubmit = this.handleSubmit;
   }
   onChange(e) {
     this.setState({ text: e.target.value });
+  }
+
+  handleNext(e) {
+    console.log('click next');
+
+    this.queryToServer(this.state.queryCursor, this.props.repos.githubAccount,
+    this.state.currentPage + 1);
+  }
+
+  handlePrev(e) {
+    console.log('click prev');
+
+    this.queryToServer(this.state.queryCursor, this.props.repos.githubAccount,
+    this.state.currentPage - 1);
   }
 
   handleSubmit(e) {
@@ -45,6 +74,8 @@ class ReposPage extends React.Component {
     if (this.state.text !== '') {
       if (this.props.repos.githubAccount) {
         console.log('Start to query !!!!!!');
+        this.state.queryStats = QueryStatus.QUERYING;
+
         this.queryToServer(this.state.text, this.props.repos.githubAccount);
       }
     }
@@ -53,13 +84,29 @@ class ReposPage extends React.Component {
   /* <h3>Starred Repo</h3>*/
 
   renderReposComponents() {
+    // const { repos } = this.props;
+    const showPre = this.state.currentPage > 0 ?
+    (<button onClick={this.handlePrev}>Prev</button>) : null;
+    const showNext = this.state.currentPage < (this.state.totalPage - 1) ?
+    (<button onClick={this.handleNext}>Next</button>) : null;
+
+    const nextOperation = this.state.queryStats !== QueryStatus.QUERIED ? null : (
+      <div className="flex-row">
+        <span>
+          Hits:{this.state.total}. Pages:{this.state.totalPage}. CurrentPage: {this.state.currentPage + 1}.
+        </span>
+        {showPre}
+        {showNext}
+      </div>
+    );
     return (
-          <div>
+          <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
             <form onSubmit={this.handleSubmit}>
               <input onChange={this.onChange} value={this.state.text} />
               <button>Search</button>
             </form>
-            <RepoList items={this.state.items} />
+            {nextOperation}
+            <RepoList items={this.state.hits} />
           </div>
         );
   }
@@ -107,28 +154,33 @@ class ReposPage extends React.Component {
     // }
   }
 
+  // hitsPerPage
+  // page:
   // filters: "facet1 AND facet2"
-  queryToServer(query, account) {
+  queryToServer(query, account, page = 0) {
     const appID = 'EQDRH6QSH7';
     const key = '6066c3e492d3a35cc0a425175afa89ff';
     const indexName = 'githubRepo';
     const attributesToSnippet = ['readmd:5', 'description:5', 'homepage:5', 'repoURL:5'];
-    const facet = 'starredBy:' + account;
-    const facetFilters = [facet];
+    // const facet = 'starredBy:' + account;
+    // const facetFilters = [facet];
+    const filters = 'starredBy:' + account;
     const client = algoliasearch(appID, key);
     const index = client.initIndex(indexName);
-    index.search(query, { attributesToSnippet, facetFilters }, (err, content) => {
-      console.log('error:', err);
+
+    index.search(query, { attributesToSnippet, filters, page }, (err, content) => {
+      this.state.queryStats = QueryStatus.QUERIED;
+
+      if (err) {
+        console.log('error:', err);
+      }
       console.log('content:', content);
 
-      const hits = content.nbHits;
-
-      const currentPage = content.page;
-      const totalPage = content.nbPages;
-
-      // ownerURL
-      // :
-      // "https://github.com/reactjs"
+      this.state.total = content.nbHits;
+      this.state.currentPage = content.page;
+      this.state.totalPage = content.nbPages;
+      this.state.queryCursor = content.query;
+      this.state.queryStats = QueryStatus.QUERIED;
 
       const hitsList = content.hits;
       const nextItems = [];
@@ -142,8 +194,8 @@ class ReposPage extends React.Component {
       }
 
       // const nextItems = this.state.items.concat([{ text: this.state.text, id: Date.now() }]);
-      const nextText = '';
-      this.setState({ items: nextItems, text: nextText });
+      // const nextText = '';
+      this.setState({ hits: nextItems });
     });
   }
 
@@ -161,41 +213,18 @@ class ReposPage extends React.Component {
 
     this.timeout = setTimeout(() => {
       console.log('timer runs !!!');
-      // debugger;
       dispatch({ type: FETCH_STARRRED_STATUS, payload: { text: 'Do something.' } });
     }, 2000);
   }
 
   hasData() {
-    // const { starredRepos } = this.props;
-    const starredRepos = this.props.repos;
-    return (!starredRepos.error && starredRepos.fetchingStatus === FetchingStatus.INDEXED);
+    const repos = this.props.repos;
+    const afterIndexStatus = (repos.fetchingStatus === FetchingStatus.INDEXED);
+
+    return (!repos.error && afterIndexStatus);
   }
 
   renderComponents() {
-    // redux-form part
-    // let { fields: { firstName, lastName, email }, handleSubmit } = this.props;
-    // let { fields: { firstName, lastName, email }, handleSubmit } = this.props;
-    // handleSubmit = this.handleSubmit;
-    // const reduxPart = (
-    //   <form onSubmit={handleSubmit}>
-    //     <div>
-    //       <label>First Name</label>
-    //       <input type="text" placeholder="First Name" {...firstName} />
-    //     </div>
-    //     <div>
-    //       <label>Last Name</label>
-    //       <input type="text" placeholder="Last Name" {...lastName} />
-    //     </div>
-    //     <div>
-    //       <label>Email</label>
-    //       <input type="email" placeholder="Email" {...email} />
-    //     </div>
-    //     <button type="submit">Submit</button>
-    //   </form>
-    // );
-
-
     const { numOfStarred } = this.props.repos;
 
     let statusStr = '';
@@ -211,7 +240,7 @@ class ReposPage extends React.Component {
     return (
       <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
         {statusStr}
-        <div>
+        <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
           {reposComponent}
         </div>
       </div>
@@ -234,7 +263,7 @@ class ReposPage extends React.Component {
         break;
       case FetchingStatus.INDEXING:
         if (numOfStarred > 0) {
-          statusStr = 'It is indexing ' + numOfStarred + ', wait a mement...';
+          statusStr = 'It is indexing ' + numOfStarred + ' repos, wait a mement...';
         } else {
           statusStr = 'It is indexing, wait a mement...';
         }
@@ -245,11 +274,9 @@ class ReposPage extends React.Component {
 
     return (
       <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
-
         <div className="loading-text">
           {statusStr}
         </div>
-
       </div>
     );
   }
