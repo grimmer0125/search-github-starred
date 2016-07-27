@@ -1,14 +1,75 @@
 import React from 'react';
 import FetchingStatus from './constants';
 import { connect } from 'react-redux';
+import algoliasearch from 'algoliasearch';
+import { reduxForm } from 'redux-form';
+
 // import { bindActionCreators } from 'redux';
 
 import {
   FETCH_STARRRED_STATUS,
 } from './actionTypes';
 
+class RepoList extends React.Component {
+
+  render() {
+    const createItem = function (item) {
+      return (
+        <li key={item.id}>
+          <a href={item.url}>{item.text}</a>
+        </li>
+      );
+    };
+    return <ul>{this.props.items.map(createItem)}</ul>;
+  }
+}
 
 class ReposPage extends React.Component {
+
+  constructor(props) {
+    super(props);
+
+    this.state = { items: [], text: '' };
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.onChange = this.onChange.bind(this);
+    // props.handleSubmit = this.handleSubmit;
+  }
+  onChange(e) {
+    this.setState({ text: e.target.value });
+  }
+
+  handleSubmit(e) {
+    console.log('handleSubmit !!! ');
+    e.preventDefault();
+
+    if (this.state.text !== '') {
+      if (this.props.repos.githubAccount) {
+        console.log('Start to query !!!!!!');
+        this.queryToServer(this.state.text, this.props.repos.githubAccount);
+      }
+    }
+  }
+
+  /* <h3>Starred Repo</h3>*/
+
+  renderReposComponents() {
+    return (
+          <div>
+            <form onSubmit={this.handleSubmit}>
+              <input onChange={this.onChange} value={this.state.text} />
+              <button>Search</button>
+            </form>
+            <RepoList items={this.state.items} />
+          </div>
+        );
+  }
+
+
+//  expect(handleSubmit(submit, values, props, asyncValidate)).toBe(undefined);
+
+  // handleSubmit() {
+  //   console.log('handleSubmit');
+  // }
 
   componentWillMount() {
     // const { businessId, getBillingData } = this.props;
@@ -41,6 +102,48 @@ class ReposPage extends React.Component {
       console.log('start timer in receive props ');
       this.startPoll();
     }
+    // else {
+    //   this.queryToServer('react', this.props.repos.githubAccount);
+    // }
+  }
+
+  queryToServer(query, account) {
+    const appID = 'EQDRH6QSH7';
+    const key = '6066c3e492d3a35cc0a425175afa89ff';
+    const indexName = 'githubRepo';
+    const attributesToSnippet = ['readmd:5', 'description:5', 'homepage:5', 'repoURL:5'];
+    const facet = 'starredBy:' + account;
+    const facetFilters = [facet];
+    const client = algoliasearch(appID, key);
+    const index = client.initIndex(indexName);
+    index.search(query, { attributesToSnippet, facetFilters }, (err, content) => {
+      console.log('error:', err);
+      console.log('content:', content);
+
+      const hits = content.nbHits;
+
+      const currentPage = content.page;
+      const totalPage = content.nbPages;
+
+      // ownerURL
+      // :
+      // "https://github.com/reactjs"
+
+      const hitsList = content.hits;
+      const nextItems = [];
+      const checkDict = {};
+      for (const hit of hitsList) {
+        if (checkDict.hasOwnProperty(hit.repoURL) === false) {
+          const item = { text: hit.repoURL, url: hit.repoURL, id: hit.repoURL };
+          checkDict[hit.repoURL] = 1;
+          nextItems.push(item);
+        }
+      }
+
+      // const nextItems = this.state.items.concat([{ text: this.state.text, id: Date.now() }]);
+      const nextText = '';
+      this.setState({ items: nextItems, text: nextText });
+    });
   }
 
   // const type = 'DELETE_DEVICE';
@@ -69,19 +172,47 @@ class ReposPage extends React.Component {
   }
 
   renderComponents() {
+    // redux-form part
+    // let { fields: { firstName, lastName, email }, handleSubmit } = this.props;
+    // let { fields: { firstName, lastName, email }, handleSubmit } = this.props;
+    // handleSubmit = this.handleSubmit;
+    // const reduxPart = (
+    //   <form onSubmit={handleSubmit}>
+    //     <div>
+    //       <label>First Name</label>
+    //       <input type="text" placeholder="First Name" {...firstName} />
+    //     </div>
+    //     <div>
+    //       <label>Last Name</label>
+    //       <input type="text" placeholder="Last Name" {...lastName} />
+    //     </div>
+    //     <div>
+    //       <label>Email</label>
+    //       <input type="email" placeholder="Email" {...email} />
+    //     </div>
+    //     <button type="submit">Submit</button>
+    //   </form>
+    // );
+
+
     const { numOfStarred } = this.props.repos;
 
     let statusStr = '';
 
     if (numOfStarred > 0) {
-      statusStr = 'Indexing is finished. Total: ' + numOfStarred + ', start to query';
+      statusStr = 'Indexing is finished. Total repos: ' + numOfStarred + '. Start to query.';
     } else {
       statusStr = 'Indexing is finished, start to query';
     }
 
+    const reposComponent = this.renderReposComponents();
+
     return (
       <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
         {statusStr}
+        <div>
+          {reposComponent}
+        </div>
       </div>
     );
   }
@@ -117,6 +248,7 @@ class ReposPage extends React.Component {
         <div className="loading-text">
           {statusStr}
         </div>
+
       </div>
     );
   }
@@ -155,5 +287,42 @@ export function mapStateToProps(state) {
 
 //   }, dispatch);
 // }
+
+
 //
+
+// ReposPage = reduxForm({ // <----- THIS IS THE IMPORTANT PART!
+//   form: 'contact',                           // a unique name for this form
+//   fields: ['firstName', 'lastName', 'email'], // all the fields in your form
+// })(ReposPage);
+
 export default connect(mapStateToProps)(ReposPage);
+
+
+//
+// // index.search("react", {
+// //   "getRankingInfo": 1,
+// //   "facets": "*",
+// //   "attributesToRetrieve": "*",
+// //   "highlightPreTag": "<em>",
+// //   "highlightPostTag": "</em>",
+// //   "hitsPerPage": 10,
+// //   "facetFilters": [
+// //     "starredBy:grimmer0125"
+// //   ],
+// //   "maxValuesPerFacet": 100
+// // });
+//
+// index.search('query string', {
+//   attributesToRetrieve: ['firstname', 'lastname'],
+//   hitsPerPage: 50,
+// }, function searchDone(err, content) {
+//   if (err) {
+//     console.error(err);
+//     return;
+//   }
+//
+//   for (const h in content.hits) {
+//     console.log('Hit(' + content.hits[h].objectID + '): ' + content.hits[h].toString());
+//   }
+// });

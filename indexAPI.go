@@ -15,7 +15,7 @@ func QueryAlgolia(queryStr, starredBy string) {
 
 	params := algoliasearch.Map{
 		"attributesToSnippet": []string{"description:40"},
-		"facetFilters":        "starredBy" + starredBy,
+		"facetFilters":        "starredBy:" + starredBy,
 	}
 
 	res, err := index.Search(queryStr, params)

@@ -218,8 +218,9 @@ func getReposHandler(c *gin.Context) {
 				// numOfStarred      int
 
 				c.JSON(200, gin.H{
-					"status":       user.status,
-					"numOfStarred": user.numOfStarred,
+					"status":        user.status,
+					"numOfStarred":  user.numOfStarred,
+					"githubAccount": account2,
 				})
 
 			} else {

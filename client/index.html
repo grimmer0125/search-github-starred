@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" type="text/css" href="/styles/octicons/octicons.css">
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:400,300,500">
+        <!-- <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearch.min.js"></script> -->
         <title>Search GitHub!</title>
     </head>
     <body>
@@ -12,3 +13,23 @@
         <script src="/build-client/bundle.js" charset="utf-8"></script>
     </body>
 </html>
+
+<!-- <ul id="msgs"></ul>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script>
+  $(function() {
+    var msgs = $("#msgs");
+    if (!window["WebSocket"]) {
+      msgs.html("WebSocket is unsupported.");
+    } else {
+      var socket = new WebSocket("ws://{{.Host}}/clock");
+      socket.onclose = function() {
+        msgs.append("<div>connection was closed.</div>");
+      };
+      socket.onmessage = function(e) {
+        var msg = eval("(" + e.data + ")")
+        msgs.html(new Date(msg.When));
+      }
+    }
+  })
+</script> -->
