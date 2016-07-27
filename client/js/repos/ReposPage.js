@@ -261,7 +261,7 @@ class ReposPage extends React.Component {
         statusStr = 'Fetching is not started yet';
         break;
       case FetchingStatus.FETCHING:
-        statusStr = 'It is fetching, wait a moement...';
+        statusStr = 'It is fetching, wait a moment...';
         break;
       case FetchingStatus.INDEXING:
         if (numOfStarred > 0) {
