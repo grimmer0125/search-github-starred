@@ -147,11 +147,12 @@ func GetStarredInfo(tokenOwner, token string) ([]*map[string]interface{}, error)
 		for _, repo := range repoOrigList {
 
 			object := map[string]interface{}{
-				"apiURL":      repo["url"],
-				"repoURL":     repo["html_url"],
-				"repoName":    repo["name"],
-				"ownerName":   repo["owner"].(map[string]interface{})["login"],
-				"ownerURL":    repo["owner"].(map[string]interface{})["html_url"],
+				"apiURL":        repo["url"],
+				"repoURL":       repo["html_url"],
+				"repoName":      repo["name"],
+				"repofull_name": repo["full_name"], //no use now
+				// "ownerName":     repo["owner"].(map[string]interface{})["login"],    //no use now
+				// "ownerURL":      repo["owner"].(map[string]interface{})["html_url"], // no use now
 				"starredBy":   tokenOwner,
 				"description": repo["description"],
 				"homepage":    repo["homepage"],

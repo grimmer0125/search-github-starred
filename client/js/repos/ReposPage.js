@@ -15,7 +15,7 @@ class RepoList extends React.Component {
     const createItem = function (item) {
       return (
         <li key={item.id}>
-          <a href={item.url}>{item.text}</a>
+          <a href={item.url}>{item.repofull_name}</a> {item.desc}
         </li>
       );
     };
@@ -187,7 +187,8 @@ class ReposPage extends React.Component {
       const checkDict = {};
       for (const hit of hitsList) {
         if (checkDict.hasOwnProperty(hit.repoURL) === false) {
-          const item = { text: hit.repoURL, url: hit.repoURL, id: hit.repoURL };
+          const item = { text: hit.repoURL, url: hit.repoURL,
+            id: hit.repoURL, desc: hit.description, repofull_name: hit.repofull_name };
           checkDict[hit.repoURL] = 1;
           nextItems.push(item);
         }
