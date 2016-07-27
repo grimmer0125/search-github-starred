@@ -92,12 +92,28 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		profile, err := oauth2.ProfileByCode(provider, code)
 
 		if err != nil {
-			log.Println("Failed to Profile", providerName, "-", err)
+			log.Println("Failed to Profile !!!! ", providerName, "-", err)
+			// c.JSON(401, gin.H{"status": "unauthorized"})
+
+			// Write([]byte) (int, error)
+			w.WriteHeader(http.StatusUnauthorized)
+
+			return
 		}
 
-		fmt.Print("github access token:", profile.Token().AccessToken)
+		if profile.Nickname() != "" && profile.Token() != nil && profile.Token().AccessToken != "" {
 
-		prepareUserStarredRepo(profile.Nickname(), profile.Token().AccessToken)
+			fmt.Print("github access token:", profile.Token().AccessToken)
+
+			prepareUserStarredRepo(profile.Nickname(), profile.Token().AccessToken)
+		} else {
+
+			log.Println("Got Profile but info something worng !!!! ")
+
+			w.WriteHeader(http.StatusUnauthorized)
+
+			return
+		}
 
 		saveSession(w, profile)
 		w.Header()["Location"] = []string{"/"}
