@@ -4,6 +4,11 @@
 	"GodepVersion": "v74",
 	"Deps": [
 		{
+			"ImportPath": "github.com/algolia/algoliasearch-client-go/algoliasearch",
+			"Comment": "2.0.0-86-g7a02b74",
+			"Rev": "7a02b747b6610d2bb28712edb04b20190458d6ce"
+		},
+		{
 			"ImportPath": "github.com/gin-gonic/gin",
 			"Comment": "v1.0rc1-268-gf931d1e",
 			"Rev": "f931d1ea80ae95a6fc739213cdd9399bd2967fb6"
