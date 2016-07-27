@@ -45,13 +45,13 @@ export function* fetchStatusAsync(action) {
     console.log('not json');
   }
 
-  if (res === 'get your repos request !!!!!!') {
-    yield put(getReposStatusSucceeded(FetchingStatus.FETCHED)); // or
-  } else {
-    if (dataJSON && dataJSON.hasOwnProperty('status')) {
-      yield put(getReposStatusSucceeded(dataJSON)); // or
-    }
+  // if (res === 'get your repos request !!!!!!') {
+  //   yield put(getReposStatusSucceeded(FetchingStatus.FETCHED)); // or
+  // } else {
+  if (dataJSON && dataJSON.hasOwnProperty('status')) {
+    yield put(getReposStatusSucceeded(dataJSON)); // or
   }
+  // TODO: need to hanlde error case
 
 // step 2
 // yield put({type: "USER_FETCH_SUCCEEDED", user: user});

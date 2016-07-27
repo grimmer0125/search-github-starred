@@ -107,6 +107,7 @@ class ReposPage extends React.Component {
     // }
   }
 
+  // filters: "facet1 AND facet2"
   queryToServer(query, account) {
     const appID = 'EQDRH6QSH7';
     const key = '6066c3e492d3a35cc0a425175afa89ff';

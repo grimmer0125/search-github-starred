@@ -31,6 +31,15 @@ func QueryAlgolia(queryStr, starredBy string) {
 func SendToAlgolia(repoList []*map[string]interface{}) error {
 
 	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
+
+	//		ClearIndex(name string) (res UpdateTaskRes, err error)
+	_, err := client.ClearIndex("githubRepo")
+	if err == nil {
+		log.Println("delete index ok")
+	} else {
+		log.Println("delete index fail")
+	}
+
 	index := client.InitIndex("githubRepo")
 
 	setting := make(map[string]interface{})
@@ -57,7 +66,7 @@ func SendToAlgolia(repoList []*map[string]interface{}) error {
 		}
 	}
 
-	_, err := index.AddObjects(objects)
+	_, err = index.AddObjects(objects)
 	if err != nil {
 		log.Println("add to algolia error:", err)
 		return err

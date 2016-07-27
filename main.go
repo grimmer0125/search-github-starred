@@ -152,22 +152,15 @@ func init() {
 	_ = userMap
 }
 func setupUserToMap(account string, user *GitHubUser) {
-	log.Println("set map, lock ")
 	mux.Lock()
 	userMap[account] = user
-	log.Println("map:", userMap)
 	mux.Unlock()
-	log.Println("set map, unlock ")
-
 }
 func getUserFromMap(account string) (*GitHubUser, error) {
-	log.Println("get map, lock ")
 
 	mux.Lock()
-	log.Println("map:", userMap)
 
 	defer mux.Unlock()
-	log.Println("get map, lock defer")
 
 	elem, ok := userMap[account]
 	if ok == true {
@@ -202,9 +195,9 @@ func getReposHandler(c *gin.Context) {
 	r := c.Request
 	ok := false
 	message := "no valid auth"
-	log.Println("map len:", len(userMap))
 
-	log.Println("map:", userMap)
+	// log.Println("map len:", len(userMap))
+	// log.Println("map:", userMap)
 	// message := ""
 
 	if userMap == nil {
@@ -214,18 +207,18 @@ func getReposHandler(c *gin.Context) {
 	if authCookie, err := r.Cookie("auth"); err == nil {
 		// v.name !!
 		var v map[string]interface{}
-		log.Println("authCookie: ", authCookie)
+		// log.Println("authCookie: ", authCookie)
 		b, _ := base64.StdEncoding.DecodeString(authCookie.Value)
-		log.Println("after decoded", string(b))
+		// log.Println("after decoded", string(b))
 		err := json.Unmarshal([]byte(b), &v)
-		log.Println("after decoded map", v)
+		// log.Println("after decoded map", v)
 
 		if err != nil {
 			log.Fatalf("Failed to Unmarshal: %v\n", err)
 
 		} else if account, ok2 := v["name"]; ok2 == true {
 			account2 := account.(string)
-			log.Println("account2:", account2)
+			// log.Println("account2:", account2)
 			if user, _ := getUserFromMap(account2); user != nil {
 				log.Println("found out account:", user.account)
 				ok = true
@@ -240,7 +233,11 @@ func getReposHandler(c *gin.Context) {
 				})
 
 			} else {
-				log.Println("does not have the same key")
+				log.Println("does not have the same key, force logout")
+
+				// w.Header()["Location"] = []string{"/"}
+				// w.WriteHeader(http.StatusTemporaryRedirect)
+				cleanCookieAndToLoginPage(c)
 			}
 		}
 
@@ -267,6 +264,18 @@ func getReposHandler(c *gin.Context) {
 
 }
 
+func cleanCookieAndToLoginPage(c *gin.Context) {
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:   "auth",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
+	w := c.Writer
+	w.Header()["Location"] = []string{"/login"}
+	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
 func main() {
 	fmt.Println("start main")
 	port := os.Getenv("PORT")
@@ -288,17 +297,7 @@ func main() {
 
 	r.GET("/", gin.WrapH(mustAuth(&templateHandler{filename: "index.html"})))
 	r.GET("/login", gin.WrapH(&templateHandler{filename: "templates/login.html"}))
-	r.GET("/logout", func(c *gin.Context) {
-		http.SetCookie(c.Writer, &http.Cookie{
-			Name:   "auth",
-			Value:  "",
-			Path:   "/",
-			MaxAge: -1,
-		})
-		w := c.Writer
-		w.Header()["Location"] = []string{"/login"}
-		w.WriteHeader(http.StatusTemporaryRedirect)
-	})
+	r.GET("/logout", cleanCookieAndToLoginPage)
 	r.GET("/auth/*action", gin.WrapF(loginHandler))
 	r.GET("/clock", gin.WrapH(websocket.Handler(func(ws *websocket.Conn) {
 		for {
