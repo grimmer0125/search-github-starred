@@ -167,8 +167,9 @@ class ReposPage extends React.Component {
     const filters = 'starredBy:' + account;
     const client = algoliasearch(appID, key);
     const index = client.initIndex(indexName);
+    const typoTolerance = false;
 
-    index.search(query, { attributesToSnippet, filters, page }, (err, content) => {
+    index.search(query, { attributesToSnippet, filters, page, typoTolerance }, (err, content) => {
       this.state.queryStats = QueryStatus.QUERIED;
 
       if (err) {
@@ -264,9 +265,9 @@ class ReposPage extends React.Component {
         break;
       case FetchingStatus.INDEXING:
         if (numOfStarred > 0) {
-          statusStr = 'It is indexing ' + numOfStarred + ' repos, wait a mement...';
+          statusStr = 'It is indexing ' + numOfStarred + ' repos, wait a moment...';
         } else {
-          statusStr = 'It is indexing, wait a mement...';
+          statusStr = 'It is indexing, wait a moment...';
         }
         break;
       default:
