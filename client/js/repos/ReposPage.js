@@ -240,11 +240,11 @@ class ReposPage extends React.Component {
 
     let statusStr = '';
 
-    if (numOfStarred > 0) {
-      statusStr = 'Indexing is finished. Total repos: ' + numOfStarred + '. Start to query.';
-    } else {
-      statusStr = 'Indexing is finished, start to query';
-    }
+    // if (numOfStarred > 0) {
+    statusStr = 'Total: ' + numOfStarred + '. Start to full-text search your starred repos.';
+    // } else {
+    //   statusStr = 'Indexing is finished, start to query';
+    // }
 
     const reposComponent = this.renderReposComponents();
 
