@@ -235,9 +235,17 @@ func getReposHandler(c *gin.Context) {
 			} else {
 				log.Println("does not have the same key, force logout")
 
+				http.SetCookie(c.Writer, &http.Cookie{
+					Name:   "auth",
+					Value:  "",
+					Path:   "/",
+					MaxAge: -1,
+				})
 				// w.Header()["Location"] = []string{"/"}
 				// w.WriteHeader(http.StatusTemporaryRedirect)
-				cleanCookieAndToLoginPage(c)
+				// cleanCookieAndToLoginPage2(c)
+
+				// return
 			}
 		}
 
@@ -272,7 +280,8 @@ func cleanCookieAndToLoginPage(c *gin.Context) {
 		MaxAge: -1,
 	})
 	w := c.Writer
-	w.Header()["Location"] = []string{"/login"}
+	// w.Header()["Location"] = []string{"/login"}
+	w.Header().Set("location", "/login")
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 

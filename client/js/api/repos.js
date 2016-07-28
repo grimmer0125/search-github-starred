@@ -24,6 +24,19 @@ function getReposStatus() {
     console.log('get the response');
     // console.log('res:', res.text());
     // debugger;
+    // console.log('status:', res.statusText);
+    // console.log('res:', res);
+
+    if (res.status === 401) { // statusText === 'Temporary Redirect') {
+      const location = '/login';// res.headers.get('location');
+
+      console.log('try to login');
+
+      // if (location) {
+      window.location = location;
+      // }
+    }
+
     return res.text();
     // console.log('res json :', res.json());
   });
