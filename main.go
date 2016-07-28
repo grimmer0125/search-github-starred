@@ -96,9 +96,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			// c.JSON(401, gin.H{"status": "unauthorized"})
 
 			// Write([]byte) (int, error)
-			w.WriteHeader(http.StatusUnauthorized)
+			// w.WriteHeader(http.StatusUnauthorized)
 
-			return
+			// return
 		}
 
 		if profile.Nickname() != "" && profile.Token() != nil && profile.Token().AccessToken != "" {
@@ -106,16 +106,18 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Print("github access token:", profile.Token().AccessToken)
 
 			prepareUserStarredRepo(profile.Nickname(), profile.Token().AccessToken)
+			saveSession(w, profile)
+
 		} else {
 
 			log.Println("Got Profile but info something worng !!!! ")
 
-			w.WriteHeader(http.StatusUnauthorized)
+			// w.WriteHeader(http.StatusUnauthorized)
 
-			return
+			// return
 		}
 
-		saveSession(w, profile)
+		//		saveSession(w, profile)
 		w.Header()["Location"] = []string{"/"}
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	default:
