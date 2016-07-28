@@ -8,6 +8,7 @@ import (
 	"github.com/algolia/algoliasearch-client-go/algoliasearch"
 )
 
+// no use now
 func QueryAlgolia(queryStr, starredBy string) {
 	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
 
@@ -28,19 +29,34 @@ func QueryAlgolia(queryStr, starredBy string) {
 	fmt.Println("search result:", string(b))
 }
 
-func SendToAlgolia(repoList []*map[string]interface{}) error {
+func SendToAlgolia(repoList []*map[string]interface{}, account string) error {
 
 	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
 
-	//		ClearIndex(name string) (res UpdateTaskRes, err error)
-	_, err := client.ClearIndex("githubRepo")
-	if err == nil {
-		log.Println("delete index ok")
-	} else {
-		log.Println("delete index fail")
-	}
-
 	index := client.InitIndex("githubRepo")
+
+	// delete first
+	// _, err := client.ClearIndex("githubRepo")
+	// if err == nil {
+	// 	log.Println("delete index ok")
+	// } else {
+	// 	log.Println("delete index fail")
+	// }
+
+	filters := "starredBy:" + account
+	// facet := "starredBy:" + account
+	// facetFilters := []string{facet}
+
+	params := algoliasearch.Map{
+		// Set your query parameters here
+		"filters": filters,
+	}
+	err := index.DeleteByQuery("*", params)
+	if err == nil {
+		log.Println("delete ok !!!!", account)
+	} else {
+		log.Println("delete fail !!!!", account)
+	}
 
 	setting := make(map[string]interface{})
 	setting["attributesForFaceting"] = []string{"starredBy"}

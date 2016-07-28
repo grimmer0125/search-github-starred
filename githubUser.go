@@ -30,7 +30,7 @@ type GitHubUser struct {
 
 // func GetStarredInfo(tokenOwner, token string) (map[string]interface{}, error) {
 
-func (user *GitHubUser) GetStarredInfo(tokenOwner, token string) {
+func (user *GitHubUser) GetStarredInfo() {
 
 	user.status = FETCHING
 	repoList, _ := GetStarredInfo(user.account, user.accessToken)
@@ -42,8 +42,8 @@ func (user *GitHubUser) GetStarredInfo(tokenOwner, token string) {
 	// b, _ := json.Marshal(&repoList)
 	// fmt.Println("total repo:", string(b))
 
-	// try to indexing
-	err := SendToAlgolia(repoList)
+	//try to indexing
+	err := SendToAlgolia(repoList, user.account)
 	if err == nil {
 		user.status = INDEXED
 	}

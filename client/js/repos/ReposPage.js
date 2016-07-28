@@ -40,17 +40,19 @@ class ReposPage extends React.Component {
       total: 0,
       totalPage: 0,
       currentPage: 0,
-      text: '',
+      querytext: '',
       queryCursor: '',
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.onChange = this.onChange.bind(this);
     this.handleNext = this.handleNext.bind(this);
     this.handlePrev = this.handlePrev.bind(this);
+    this.handleReIndex = this.handleReIndex.bind(this);
+
     // props.handleSubmit = this.handleSubmit;
   }
   onChange(e) {
-    this.setState({ text: e.target.value });
+    this.setState({ querytext: e.target.value });
   }
 
   handleNext(e) {
@@ -67,16 +69,22 @@ class ReposPage extends React.Component {
     this.state.currentPage - 1);
   }
 
+  handleReIndex() {
+    console.log('re-index, redirect to login page');
+    const location = '/login';
+    window.location = location;
+  }
+
   handleSubmit(e) {
     console.log('handleSubmit !!! ');
     e.preventDefault();
 
-    if (this.state.text !== '') {
+    if (this.state.querytext !== '') {
       if (this.props.repos.githubAccount) {
         console.log('Start to query !!!!!!');
         this.state.queryStats = QueryStatus.QUERYING;
 
-        this.queryToServer(this.state.text, this.props.repos.githubAccount);
+        this.queryToServer(this.state.querytext, this.props.repos.githubAccount);
       }
     }
   }
@@ -102,7 +110,7 @@ class ReposPage extends React.Component {
     return (
           <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
             <form onSubmit={this.handleSubmit}>
-              <input onChange={this.onChange} value={this.state.text} />
+              <input onChange={this.onChange} value={this.state.querytext} />
               <button>Search</button>
             </form>
             {nextOperation}
@@ -165,6 +173,7 @@ class ReposPage extends React.Component {
     // const facet = 'starredBy:' + account;
     // const facetFilters = [facet];
     const filters = 'starredBy:' + account;
+
     const client = algoliasearch(appID, key);
     const index = client.initIndex(indexName);
     const typoTolerance = false;
@@ -188,7 +197,7 @@ class ReposPage extends React.Component {
       const checkDict = {};
       for (const hit of hitsList) {
         if (checkDict.hasOwnProperty(hit.repoURL) === false) {
-          const item = { text: hit.repoURL, url: hit.repoURL,
+          const item = { url: hit.repoURL,
             id: hit.repoURL, desc: hit.description, repofull_name: hit.repofull_name };
           checkDict[hit.repoURL] = 1;
           nextItems.push(item);
@@ -215,7 +224,7 @@ class ReposPage extends React.Component {
 
     this.timeout = setTimeout(() => {
       console.log('timer runs !!!');
-      dispatch({ type: FETCH_STARRRED_STATUS, payload: { text: 'Do something.' } });
+      dispatch({ type: FETCH_STARRRED_STATUS }); // , payload: { text: 'Do something.' }
     }, 2000);
   }
 
@@ -241,7 +250,10 @@ class ReposPage extends React.Component {
 
     return (
       <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
-        {statusStr}
+        <div className="flex-row">
+          <span>{statusStr}</span>
+          <button onClick={this.handleReIndex}>Re-Index</button>
+        </div>
         <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
           {reposComponent}
         </div>

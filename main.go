@@ -181,7 +181,7 @@ func prepareUserStarredRepo(account string, token string) {
 
 	user := GitHubUser{account, token, NOTSTART, 0, 0}
 	setupUserToMap(account, &user)
-	go user.GetStarredInfo(account, token)
+	go user.GetStarredInfo()
 
 	// _, err = getStarredInfo(profile.Nickname(), profile.Token().AccessToken)
 	// if err != nil {
