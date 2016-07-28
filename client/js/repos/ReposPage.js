@@ -250,6 +250,9 @@ class ReposPage extends React.Component {
 
     return (
       <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
+        <div>
+          <a href="https://grimmer.io/">About me</a>
+        </div>
         <div className="flex-row">
           <span>{statusStr}</span>
           <button onClick={this.handleReIndex}>Re-Index</button>
