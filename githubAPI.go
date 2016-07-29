@@ -15,10 +15,12 @@ func GetReadme(token string, repoList []*map[string]interface{}, j int, channel 
 	repo := *repoList[j]
 	readmeURL := repo["apiURL"].(string) + "/readme"
 
+	log.Println("try to get readme:", readmeURL)
 	req, err := http.NewRequest("GET", readmeURL, nil)
 	if err != nil {
-		log.Println("err:", err)
-		// return nil, err
+		log.Println("new request error :", err)
+		channel <- j
+		return
 	}
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Accept", "application/vnd.github.raw")
@@ -26,23 +28,27 @@ func GetReadme(token string, repoList []*map[string]interface{}, j int, channel 
 	c := http.Client{}
 	res, err := c.Do(req)
 	if err != nil {
-		log.Println("err:", err)
+		log.Println("res error to readme:", err)
 
-		// return nil, err
+		channel <- j
+		return
 	}
 
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		log.Println("err:", err)
+	status := res.Header.Get("Status")
+	if status == "404 Not Found" {
+		log.Println("404 Not Found")
+		// 	body: {"message":"Not Found","documentation_url":"https://developer.github.com/v3"}
 
-		// return nil, err
+	} else {
+		b, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			log.Println("read body error:", err)
+		} else {
+			repo["readmd"] = string(b)
+		}
+
+		res.Body.Close()
 	}
-
-	repo["readmd"] = string(b)
-
-	// log.Println("debug get readme:", j)
-
-	res.Body.Close()
 
 	channel <- j
 
