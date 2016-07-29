@@ -32,6 +32,10 @@
 			"Rev": "ee05b128a739a0fb76c7ebd3ae4810c1de808d6d"
 		},
 		{
+			"ImportPath": "github.com/sfreiberg/gotwilio",
+			"Rev": "f024bbefe80fdb7bcc8c43b6add05dae97744e0e"
+		},
+		{
 			"ImportPath": "github.com/tmtk75/go-oauth2/oauth2",
 			"Rev": "edd856d430f15d44e79c4fd3a01a2fc7bd9d2a02"
 		},

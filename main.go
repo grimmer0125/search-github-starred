@@ -16,6 +16,8 @@ import (
 
 	"errors"
 
+	"github.com/sfreiberg/gotwilio"
+
 	"github.com/gin-gonic/gin"
 	"github.com/tmtk75/go-oauth2/oauth2"
 	"github.com/tmtk75/go-oauth2/oauth2/github"
@@ -287,7 +289,20 @@ func cleanCookieAndToLoginPage(c *gin.Context) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
+func sendTwilioAlert(repo string) {
+	fmt.Println("send twilio alert")
+	accountSid := "AC83651bf8e21c30b313a44ccb97db3688"
+	authToken := "ee7f411bf34d3424bc8cd4c934193079"
+	twilio := gotwilio.NewTwilioClient(accountSid, authToken)
+
+	from := "+12016279052"
+	to := "+886963052251"
+	message := "Over 10k limit for Algolia api:" + repo
+	twilio.SendSMS(from, to, message, "", "")
+}
+
 func main() {
+
 	fmt.Println("start main")
 	port := os.Getenv("PORT")
 	if port == "" {

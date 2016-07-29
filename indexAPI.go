@@ -32,7 +32,6 @@ func QueryAlgolia(queryStr, starredBy string) {
 func SendToAlgolia(repoList []*map[string]interface{}, account string) error {
 
 	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
-
 	index := client.InitIndex("githubRepo")
 
 	// delete first
@@ -79,6 +78,8 @@ func SendToAlgolia(repoList []*map[string]interface{}, account string) error {
 			objects = append(objects, *object)
 		} else {
 			log.Println("record size is larger thant 100K, may ~ 10K after minified json")
+			repoURL := (*object)["repoURL"]
+			sendTwilioAlert(repoURL.(string))
 		}
 	}
 
