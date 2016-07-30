@@ -9,11 +9,32 @@ import (
 	"strings"
 )
 
-func GetReadme(token string, repoList []*map[string]interface{}, j int, channel chan int) {
+type GitHubRepo struct {
+	APIURL       string `json:"apiURL"`
+	RepoURL      string `json:"repoURL"`
+	RepoName     string `json:"repoName"`
+	RepofullName string `json:"repofullName"`
+	StarredBy    string `json:"starredBy"`
+	Description  string `json:"descriptio"`
+	Homepage     string `json:"homepage"`
+	Readme       string `json:"readme"`
+}
+
+// "apiURL":        repo["url"],
+// "repoURL":       repo["html_url"],
+// "repoName":      repo["name"],
+// "repofull_name": repo["full_name"], //no use now
+// // "ownerName":     repo["owner"].(map[string]interface{})["login"],    //no use now
+// // "ownerURL":      repo["owner"].(map[string]interface{})["html_url"], // no use now
+// "starredBy":   tokenOwner,
+// "description": repo["description"],
+// "homepage":    repo["homepage"],
+
+func GetReadme(token string, repoList []*GitHubRepo, j int, channel chan int) {
 
 	// log.Println("debug log:", j)
 	repo := *repoList[j]
-	readmeURL := repo["apiURL"].(string) + "/readme"
+	readmeURL := repo.APIURL + "/readme"
 
 	log.Println("try to get readme:", readmeURL)
 	req, err := http.NewRequest("GET", readmeURL, nil)
@@ -44,7 +65,7 @@ func GetReadme(token string, repoList []*map[string]interface{}, j int, channel 
 		if err != nil {
 			log.Println("read body error:", err)
 		} else {
-			repo["readmd"] = string(b)
+			repo.Readme = string(b)
 		}
 
 		res.Body.Close()
@@ -54,7 +75,7 @@ func GetReadme(token string, repoList []*map[string]interface{}, j int, channel 
 
 }
 
-func GetReposReadme(token string, repoList []*map[string]interface{}) error {
+func GetReposReadme(token string, repoList []*GitHubRepo) error {
 
 	lenList := len(repoList)
 
@@ -101,11 +122,11 @@ func GetReposReadme(token string, repoList []*map[string]interface{}) error {
 
 // first, prev都寫了
 // link:[<https://api.github.com/user/starred?per_page=30&page=8>; rel="next", <https://api.github.com/user/starred?per_page=30&page=8>; rel="last", <https://api.github.com/user/starred?per_page=30&page=1>; rel="first", <https://api.github.com/user/starred?per_page=30&page=6>; rel="prev"]
-func GetStarredInfo(tokenOwner, token string) ([]*map[string]interface{}, error) {
+func GetStarredInfo(tokenOwner, token string) ([]*GitHubRepo, error) {
 
 	log.Println("token:", token)
 
-	var repoList []*map[string]interface{}
+	var repoList []*GitHubRepo
 
 	for ifRun, pageIndex := true, 1; ifRun == true; pageIndex++ {
 		pageStr := strconv.Itoa(pageIndex)
@@ -152,16 +173,17 @@ func GetStarredInfo(tokenOwner, token string) ([]*map[string]interface{}, error)
 
 		for _, repo := range repoOrigList {
 
-			object := map[string]interface{}{
-				"apiURL":        repo["url"],
-				"repoURL":       repo["html_url"],
-				"repoName":      repo["name"],
-				"repofull_name": repo["full_name"], //no use now
+			object := GitHubRepo{
+				checkMapHasKey(repo, "url"),       //repo["url"].(string),
+				checkMapHasKey(repo, "html_url"),  //repo["html_url"].(string),
+				checkMapHasKey(repo, "name"),      //repo["name"].(string),
+				checkMapHasKey(repo, "full_name"), //repo["full_name"].(string),       //no use now
 				// "ownerName":     repo["owner"].(map[string]interface{})["login"],    //no use now
 				// "ownerURL":      repo["owner"].(map[string]interface{})["html_url"], // no use now
-				"starredBy":   tokenOwner,
-				"description": repo["description"],
-				"homepage":    repo["homepage"],
+				tokenOwner,
+				checkMapHasKey(repo, "description"), //repo["description"].(string),
+				checkMapHasKey(repo, "homepage"),    //repo["homepage"].(string),
+				"",
 			}
 
 			repoList = append(repoList, &object)
@@ -171,6 +193,16 @@ func GetStarredInfo(tokenOwner, token string) ([]*map[string]interface{}, error)
 	GetReposReadme(token, repoList)
 
 	return repoList, nil //map[string]interface{}{}, fmt.Errorf("unknown Content-Type: %v", ctype)
+}
+
+func checkMapHasKey(repoMap map[string]interface{}, key string) string {
+	if val, ok := repoMap[key]; ok {
+		if val != nil {
+			return val.(string)
+		}
+	}
+
+	return ""
 }
 
 // ctype, _, err := mime.ParseMediaType(res.Header.Get("Content-Type"))

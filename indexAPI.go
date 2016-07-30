@@ -4,32 +4,124 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
+	"time"
+
+	elastic "gopkg.in/olivere/elastic.v3"
 
 	"github.com/algolia/algoliasearch-client-go/algoliasearch"
+	elastigo "github.com/mattbaird/elastigo/lib"
+	// elastigo "github.com/mattbaird/elastigo/lib"
+	// "gopkg.in/olivere/elastic.v3"
 )
 
 // no use now
-func QueryAlgolia(queryStr, starredBy string) {
-	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
 
-	index := client.InitIndex("githubRepo")
-
-	params := algoliasearch.Map{
-		"attributesToSnippet": []string{"description:40"},
-		"facetFilters":        "starredBy:" + starredBy,
-	}
-
-	res, err := index.Search(queryStr, params)
-
-	if err != nil {
-		log.Println("error:", err)
-	}
-
-	b, err := json.Marshal(res)
-	fmt.Println("search result:", string(b))
+type Tweet struct {
+	User    string `json:"userUser"`
+	Message string `json:"messageMessage"`
 }
 
-func SendToAlgolia(repoList []*map[string]interface{}, account string) error {
+const (
+	awsURL      = "http://search-searchgithub-7c4xubb6ne3t7keszcai7kqi3m.us-west-2.es.amazonaws.com:80"
+	githubIndex = "githubrepos"
+)
+
+func SendToAlgolia(repoList []*GitHubRepo, account string) error {
+
+	//Create a client
+	client, err := elastic.NewClient(
+		elastic.SetURL(awsURL),
+		// elastic.SetHttpClient(http.DefaultClient),
+		elastic.SetHealthcheck(false),
+		elastic.SetSniff(false))
+
+	if err != nil {
+		// Handle error
+		log.Println("new elastic Search fail: ", err)
+		return nil
+	}
+
+	// Create an index
+	// _, err = client.CreateIndex(githubIndex).Do()
+	// if err != nil {
+	// 	// Handle error
+	// 	// panic(err)
+	// 	log.Println("create index fail :", err)
+	// }
+
+	// Add a document to the index
+	// tweet := Tweet{User: "olivere", Message: "Take Five"}
+	// _, err = client.Index().
+	// 	Index("twitter789").
+	// 	Type("tweet").
+	// 	Id("1").
+	// 	BodyJson(tweet).
+	// 	Refresh(true).
+	// 	Do()
+	// if err != nil {
+	// 	// Handle error
+	// 	// panic(err)
+	// 	log.Println("index fail,", err)
+	// }
+
+	// Delete the index again
+	// log.Println("try to delete first")
+	// _, err = client.DeleteIndex(githubIndex).Do()
+	// if err != nil {
+	// 	// Handle error
+	// 	log.Println("delete first fail:", err)
+
+	// 	if err.Error() == "elastic: Error 404 (Not Found): no such index [type=index_not_found_exception]" {
+	// 		log.Println("just not found index")
+	// 	} else {
+	// 		return err
+	// 	}
+	// }
+
+	// bulk test ok
+	bulkRequest := client.Bulk()
+
+	for i, repo := range repoList {
+
+		objectID := strconv.Itoa(i)
+
+		index := elastic.NewBulkIndexRequest().Index(githubIndex).Type(account).Id(objectID).Doc(*repo)
+		bulkRequest = bulkRequest.Add(index)
+	}
+
+	//tweet1 := GitHubRepo{"1", "1", "1", "1", "1", "1", "1", "1"}
+	// tweet1 := Tweet{User: "olivere22", Message: "Welcome to Golang and Elasticsearch."}
+	// // tweet2 := Tweet{User: "sandrae22", Message: "Dancing all night long. Yeah."}
+
+	// index1Req := elastic.NewBulkIndexRequest().Index("repo").Type("tweet").Id("91").Doc(tweet1)
+	// // index2Req := elastic.NewBulkIndexRequest().Index("twitter7891").Type("tweet").Id("191").Doc(tweet2)
+
+	// // // bulkRequest := client.Bulk()
+	// bulkRequest = bulkRequest.Add(index1Req)
+	// bulkRequest = bulkRequest.Add(index2Req)
+
+	log.Println("numbe of requests:", bulkRequest.NumberOfActions())
+	bulkResponse, err := bulkRequest.Do()
+	if err != nil {
+		log.Println("get bulk error")
+		// t.Fatal(err)
+		return err
+	}
+	log.Println("after, numbe of requests:", bulkRequest.NumberOfActions())
+
+	if bulkResponse == nil {
+		log.Println("expected bulkResponse to be != nil; got nil")
+	} else {
+		log.Println("buld resp:", bulkResponse)
+	}
+
+	log.Println("use elasticsearch done ")
+
+	return err
+}
+
+func SendToAlgolia2(repoList []*map[string]interface{}, account string) error {
 
 	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
 	index := client.InitIndex("githubRepo")
@@ -91,4 +183,100 @@ func SendToAlgolia(repoList []*map[string]interface{}, account string) error {
 		log.Println("add to algolia ok")
 		return nil
 	}
+}
+
+func QueryAlgolia(queryStr, starredBy string) {
+	client := algoliasearch.NewClient("EQDRH6QSH7", "6066c3e492d3a35cc0a425175afa89ff")
+
+	index := client.InitIndex("githubRepo")
+
+	params := algoliasearch.Map{
+		"attributesToSnippet": []string{"description:40"},
+		"facetFilters":        "starredBy:" + starredBy,
+	}
+
+	res, err := index.Search(queryStr, params)
+
+	if err != nil {
+		log.Println("error:", err)
+	}
+
+	b, err := json.Marshal(res)
+	fmt.Println("search result:", string(b))
+}
+
+func SendToElastigo(repoList []*map[string]interface{}, account string) error {
+	log.Println("Send to elastic Search  ")
+
+	core := elastigo.NewConn()
+	core.Domain = "search-searchgithub-7c4xubb6ne3t7keszcai7kqi3m.us-west-2.es.amazonaws.com"
+	core.Port = "80"
+
+	// 2nd
+	// // Trace all requests
+	// core.RequestTracer = func(method, url, body string) {
+	// 	log.Printf("Requesting %s %s", method, url)
+	// 	log.Printf("Request body: %s", body)
+	// }
+	//
+	// // add single go struct entity
+	// response, _ := core.Index("twitter", "tweet", "3", nil, Tweet{"kimchy", "Search is cool"})
+	//
+	// b, _ := json.Marshal(response)
+	// fmt.Println("twitter1 json:", string(b))
+	//
+	// log.Println("twitter1:", response)
+	//
+	// // you have bytes
+	// tw := Tweet{"kimchy", "Search is cool part 2"}
+	// bytesLine, _ := json.Marshal(tw)
+	//
+	// response2, _ := core.Index("twitter", "tweet", "4", nil, bytesLine)
+	//
+	// log.Println("twitter2:", response2)
+	// b, _ = json.Marshal(response2)
+	// fmt.Println("twitter2 json:", string(b))
+	// end
+
+	// indexer := core.NewBulkIndexerErrors(10, 60) // NewBulkIndexer(maxConns) //IndexBulk("twitter", "tweet", "3", &t, Tweet{"kimchy", "Search is now cooler"})
+	// indexer := core.NewBulkIndexer(10) // NewBulkIndexer(maxConns) //IndexBulk("twitter", "tweet", "3", &t, Tweet{"kimchy", "Search is now cooler"})
+	indexer := core.NewBulkIndexerErrors(10, 5)
+
+	indexer.Start()
+
+	// done := make(chan bool)
+	// indexer.Run(done)
+
+	// go func() {
+	// 	for errBuf := range indexer.ErrorChannel {
+	// 		// just blissfully print errors forever
+	// 		fmt.Println(errBuf.Err)
+	// 	}
+	// }()
+	for i := 0; i < 800; i++ {
+		fmt.Println("try bulk index:", i)
+
+		//indexer.Index("twitter", "user", strconv.Itoa(i), "", nil, `{"name":"bob"}`, false)
+		date := time.Unix(1257894000, 0)
+		data := map[string]interface{}{"name": "smurfs", "age": 22, "date": date}
+		err := indexer.Index("users5", "user5", strconv.Itoa(i), "", "", &date, data) //不代表真的送出
+		fmt.Println("after bulk index:", err)
+	}
+
+	// errorCt := 0
+	// var errBuf *ErrorBuffer
+	// for errBuf := range indexer.ErrorChannel {
+	// 	log.Println("get bulk error:", errBuf)
+	// 	break
+	// }
+
+	log.Println("all after bulk")
+
+	// done <- true
+	// Indexing might take a while. So make sure the program runs
+	// a little longer when trying this in main.
+	indexer.Stop()
+	log.Println("all after bulk2")
+
+	return nil
 }
