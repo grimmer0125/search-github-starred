@@ -35,7 +35,7 @@ function getReposStatus() {
 
 
 const client = new elasticsearch.Client({
-  host: 'search-searchgithub-7c4xubb6ne3t7keszcai7kqi3m.us-west-2.es.amazonaws.com:80',
+  host: 'http://search-searchgithub-7c4xubb6ne3t7keszcai7kqi3m.us-west-2.es.amazonaws.com:80',
   log: 'trace',
 });
 
