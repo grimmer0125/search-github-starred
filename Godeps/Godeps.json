@@ -78,6 +78,16 @@
 			"Rev": "5f57d2222ad794d0dffb07e664ea05e2ee07d60c"
 		},
 		{
+			"ImportPath": "gopkg.in/olivere/elastic.v3/backoff",
+			"Comment": "v3.0.45",
+			"Rev": "787ebbb5a7600662bca364e4e8ca959f315e442f"
+		},
+		{
+			"ImportPath": "gopkg.in/olivere/elastic.v3/uritemplates",
+			"Comment": "v3.0.45",
+			"Rev": "787ebbb5a7600662bca364e4e8ca959f315e442f"
+		},
+		{
 			"ImportPath": "gopkg.in/yaml.v2",
 			"Rev": "e4d366fc3c7938e2958e662b4258c7a89e1f0e3e"
 		}
