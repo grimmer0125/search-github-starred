@@ -6,9 +6,10 @@ import (
 	"log"
 	"strconv"
 
-	elastic "gopkg.in/olivere/elastic.v3"
+	// elastic "gopkg.in/olivere/elastic.v3"
 
 	"github.com/algolia/algoliasearch-client-go/algoliasearch"
+	"github.com/grimmer0125/elastic"
 	// elastigo "github.com/mattbaird/elastigo/lib"
 	// "gopkg.in/olivere/elastic.v3"
 )
@@ -21,7 +22,7 @@ import (
 // }
 
 const (
-	awsURL      = "http://search-searchgithub-7c4xubb6ne3t7keszcai7kqi3m.us-west-2.es.amazonaws.com:80"
+	awsURL      = "https://search-searchgithub-7c4xubb6ne3t7keszcai7kqi3m.us-west-2.es.amazonaws.com"
 	githubIndex = "githubrepos" //can not be githubRepos, should lower case !!
 )
 
@@ -106,7 +107,7 @@ func SendToAlgolia(repoList []*GitHubRepo, account string) error {
 	log.Println("numbe of requests:", bulkRequest.NumberOfActions())
 	bulkResponse, err := bulkRequest.Do()
 	if err != nil {
-		log.Println("get bulk error")
+		log.Println("get bulk error:", err)
 		// t.Fatal(err)
 		return err
 	}

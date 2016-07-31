@@ -34,8 +34,7 @@ function getReposStatus() {
 
 
 const client = new elasticsearch.Client({
-  host: 'https://search-searchgithub-7c4xubb6ne3t7keszcai7kqi3m.us-west-2.es.amazonaws.com',
-  log: 'trace',
+  host: 'https://search-searchgithub-7c4xubb6ne3t7keszcai7kqi3m.us-west-2.es.amazonaws.com/githubrepos',
 });
 
 const pageSize = 20;
@@ -53,7 +52,7 @@ function queryToServer(query, account, page, handler) {
   console.log('final query:' + finalQuery + ';type:' + queryType);
 
   client.search({
-    index: 'githubrepos',
+    // index: 'githubrepos',
     type: account,
     body: {
       query: {

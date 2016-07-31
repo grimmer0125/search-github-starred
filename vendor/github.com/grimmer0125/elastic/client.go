@@ -17,6 +17,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/smartystreets/go-aws-auth"
 )
 
 const (
@@ -1113,6 +1115,9 @@ func (c *Client) PerformRequest(method, path string, params url.Values, body int
 
 		// Tracing
 		c.dumpRequest((*http.Request)(req))
+
+		// Insert AWS signing
+		awsauth.Sign((*http.Request)(req))
 
 		// Get response
 		res, err := c.c.Do((*http.Request)(req))

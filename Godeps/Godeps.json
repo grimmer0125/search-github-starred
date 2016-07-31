@@ -28,12 +28,21 @@
 			"Rev": "874264fbbb43f4d91e999fecb4b40143ed611400"
 		},
 		{
+			"ImportPath": "github.com/grimmer0125/elastic",
+			"Comment": "v3.0.45-1-g3636f20",
+			"Rev": "3636f2080727cea785311b2ddd43577954a57495"
+		},
+		{
 			"ImportPath": "github.com/manucorporat/sse",
 			"Rev": "ee05b128a739a0fb76c7ebd3ae4810c1de808d6d"
 		},
 		{
 			"ImportPath": "github.com/sfreiberg/gotwilio",
 			"Rev": "f024bbefe80fdb7bcc8c43b6add05dae97744e0e"
+		},
+		{
+			"ImportPath": "github.com/smartystreets/go-aws-auth",
+			"Rev": "2043e6d0bb7e4c18464a7bba562acbe482e3cabd"
 		},
 		{
 			"ImportPath": "github.com/tmtk75/go-oauth2/oauth2",
@@ -67,11 +76,6 @@
 			"ImportPath": "gopkg.in/go-playground/validator.v8",
 			"Comment": "v8.18.1",
 			"Rev": "5f57d2222ad794d0dffb07e664ea05e2ee07d60c"
-		},
-		{
-			"ImportPath": "gopkg.in/olivere/elastic.v3",
-			"Comment": "v3.0.45",
-			"Rev": "787ebbb5a7600662bca364e4e8ca959f315e442f"
 		},
 		{
 			"ImportPath": "gopkg.in/olivere/elastic.v3/backoff",
