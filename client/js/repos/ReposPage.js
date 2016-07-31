@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import algoliasearch from 'algoliasearch';
 // import { reduxForm } from 'redux-form';
 // import { bindActionCreators } from 'redux';
+import api from '../api';
+
 
 import {
   FETCH_STARRRED_STATUS,
@@ -15,7 +17,7 @@ class RepoList extends React.Component {
     const createItem = function (item) {
       return (
         <li key={item.id}>
-          <a href={item.url}>{item.repofull_name}</a> {item.desc}
+          <a href={item.url}>{item.repofullName}</a> {item.desc}
         </li>
       );
     };
@@ -31,6 +33,10 @@ const QueryStatus = {
 
 class ReposPage extends React.Component {
 
+  resetQueryParameters() {
+    this.state.currentPage = -1;
+  }
+
   constructor(props) {
     super(props);
 
@@ -39,8 +45,8 @@ class ReposPage extends React.Component {
       hits: [],
       total: 0,
       totalPage: 0,
-      currentPage: 0,
-      querytext: '',
+      currentPage: -1,
+      textOnQueryInput: '',
       queryCursor: '',
     };
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -48,25 +54,78 @@ class ReposPage extends React.Component {
     this.handleNext = this.handleNext.bind(this);
     this.handlePrev = this.handlePrev.bind(this);
     this.handleReIndex = this.handleReIndex.bind(this);
-
+    this.handleQueryData = this.handleQueryData.bind(this);
     // props.handleSubmit = this.handleSubmit;
   }
   onChange(e) {
-    this.setState({ querytext: e.target.value });
+    this.setState({ textOnQueryInput: e.target.value });
+  }
+
+  // TODO: should add handling error case, e.g. currentPage --
+  // 1. error就回到第一頁或是query前一頁.
+  // 2. handlePrev 直接改成用local資料, 這樣就還是可以把page++的logic放在得到資料時, 不然
+  handleQueryData(resp) {
+    this.state.queryStats = QueryStatus.QUERIED;
+
+    // elasticsearch type
+    console.log('query result:', resp);
+    const hitsList = resp.hits.hits;
+    this.state.total = resp.hits.total;// nbHits;
+    // if (hitsList.length > 0) {
+    //   this.state.currentPage++;// = content.page; // ????
+    // }
+    // this.state.queryCursor = content.query; ??????
+
+    this.state.totalPage = // content.nbPages;
+    Math.ceil(this.state.total / api.pageSize);
+    // resp.hits.total /api.pageSize
+
+    // algolia type
+    // console.log('content:', content);
+    // const hitsList = content.hits;
+    // this.state.total = content.nbHits;
+    // this.state.currentPage = content.page;
+    // this.state.totalPage = content.nbPages;
+    // this.state.queryCursor = content.query;
+
+    this.state.queryStats = QueryStatus.QUERIED;
+
+    const nextItems = [];
+    const checkDict = {};
+    for (const hitData of hitsList) {
+      const hit = hitData['_source']; // elasticsearch type, algo: hit = hitData
+      if (checkDict.hasOwnProperty(hit.repoURL) === false) {
+        const item = { url: hit.repoURL,
+          id: hit.repoURL, desc: hit.description, repofullName: hit.repofullName };
+        checkDict[hit.repoURL] = 1;
+        nextItems.push(item);
+      }
+    }
+
+    // const nextItems = this.state.items.concat([{ text: this.state.text, id: Date.now() }]);
+    // const nextText = '';
+    this.setState({ hits: nextItems });
   }
 
   handleNext(e) {
     console.log('click next');
 
-    this.queryToServer(this.state.queryCursor, this.props.repos.githubAccount,
-    this.state.currentPage + 1);
+    api.queryToServer(this.state.queryCursor, this.props.repos.githubAccount,
+    this.state.currentPage + 1, this.handleQueryData);
+
+    this.state.currentPage++;
   }
 
   handlePrev(e) {
     console.log('click prev');
 
-    this.queryToServer(this.state.queryCursor, this.props.repos.githubAccount,
-    this.state.currentPage - 1);
+    api.queryToServer(this.state.queryCursor, this.props.repos.githubAccount,
+    this.state.currentPage - 1, this.handleQueryData);
+
+    this.state.currentPage--;
+    // if (hitsList.length > 0) {
+    //   this.state.currentPage++;// = content.page; // ????
+    // }
   }
 
   handleReIndex() {
@@ -79,12 +138,17 @@ class ReposPage extends React.Component {
     console.log('handleSubmit !!! ');
     e.preventDefault();
 
-    if (this.state.querytext !== '') {
+    if (this.state.textOnQueryInput !== '') {
       if (this.props.repos.githubAccount) {
         console.log('Start to query !!!!!!');
         this.state.queryStats = QueryStatus.QUERYING;
 
-        this.queryToServer(this.state.querytext, this.props.repos.githubAccount);
+        api.queryToServer(this.state.textOnQueryInput,
+          this.props.repos.githubAccount, 0, this.handleQueryData);
+
+        this.state.queryCursor = this.state.textOnQueryInput;
+        this.resetQueryParameters();
+        this.state.currentPage++;
       }
     }
   }
@@ -110,7 +174,7 @@ class ReposPage extends React.Component {
     return (
           <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
             <form onSubmit={this.handleSubmit}>
-              <input onChange={this.onChange} value={this.state.querytext} />
+              <input onChange={this.onChange} value={this.state.textOnQueryInput} />
               <button>Search</button>
             </form>
             {nextOperation}
@@ -189,7 +253,6 @@ class ReposPage extends React.Component {
       this.state.total = content.nbHits;
       this.state.currentPage = content.page;
       this.state.totalPage = content.nbPages;
-      this.state.queryCursor = content.query;
       this.state.queryStats = QueryStatus.QUERIED;
 
       const hitsList = content.hits;
@@ -198,7 +261,7 @@ class ReposPage extends React.Component {
       for (const hit of hitsList) {
         if (checkDict.hasOwnProperty(hit.repoURL) === false) {
           const item = { url: hit.repoURL,
-            id: hit.repoURL, desc: hit.description, repofull_name: hit.repofull_name };
+            id: hit.repoURL, desc: hit.description, repofullName: hit.repofullName };
           checkDict[hit.repoURL] = 1;
           nextItems.push(item);
         }

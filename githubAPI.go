@@ -15,7 +15,7 @@ type GitHubRepo struct {
 	RepoName     string `json:"repoName"`
 	RepofullName string `json:"repofullName"`
 	StarredBy    string `json:"starredBy"`
-	Description  string `json:"descriptio"`
+	Description  string `json:"description"`
 	Homepage     string `json:"homepage"`
 	Readme       string `json:"readme"`
 }
@@ -33,10 +33,10 @@ type GitHubRepo struct {
 func GetReadme(token string, repoList []*GitHubRepo, j int, channel chan int) {
 
 	// log.Println("debug log:", j)
-	repo := *repoList[j]
-	readmeURL := repo.APIURL + "/readme"
+	// repo := *repoList[j]
+	readmeURL := repoList[j].APIURL + "/readme"
 
-	log.Println("try to get readme:", readmeURL)
+	// log.Println("try to get readme:", readmeURL)
 	req, err := http.NewRequest("GET", readmeURL, nil)
 	if err != nil {
 		log.Println("new request error :", err)
@@ -62,10 +62,14 @@ func GetReadme(token string, repoList []*GitHubRepo, j int, channel chan int) {
 
 	} else {
 		b, err := ioutil.ReadAll(res.Body)
+		b2 := ""
+		_ = b2
 		if err != nil {
 			log.Println("read body error:", err)
 		} else {
-			repo.Readme = string(b)
+			b2 := string(b)
+			repoList[j].Readme = b2
+			// log.Println("got readme:", repoList[j].Readme)
 		}
 
 		res.Body.Close()
