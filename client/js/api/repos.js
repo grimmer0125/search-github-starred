@@ -42,14 +42,25 @@ const client = new elasticsearch.Client({
 const pageSize = 20;
 
 function queryToServer(query, account, page, handler) {
+  let finalQuery = query;
+  let queryType = 'cross_fields';
+  if (query.charAt(0) === '"' && query.charAt(query.length - 1) === '"') {
+    queryType = 'phrase';
+    finalQuery = query.substr(1, query.length - 2);
+
+    // return a.substr(1, a.length - 2);
+  }
+
+  console.log('final query:' + finalQuery + ';type:' + queryType);
+
   client.search({
     index: 'githubrepos',
     type: account,
     body: {
       query: {
         multi_match: {
-          query, // 'components react interface', // 'react facebook',
-          type: 'cross_fields',
+          query: finalQuery, // 'components react interface', // 'react facebook',
+          type: queryType, // 'cross_fields',
           fields: ['repofullName', 'description', 'homepage', 'readme'],
           operator: 'and',
         },
