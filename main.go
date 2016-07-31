@@ -21,7 +21,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/tmtk75/go-oauth2/oauth2"
 	"github.com/tmtk75/go-oauth2/oauth2/github"
-	"golang.org/x/net/websocket"
 )
 
 type templateHandler struct {
@@ -101,22 +100,21 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			// w.WriteHeader(http.StatusUnauthorized)
 
 			// return
-		}
-
-		if profile.Nickname() != "" && profile.Token() != nil && profile.Token().AccessToken != "" {
-
-			fmt.Print("github access token:", profile.Token().AccessToken)
-
-			prepareUserStarredRepo(profile.Nickname(), profile.Token().AccessToken)
-			saveSession(w, profile)
-
 		} else {
+			if profile.Nickname() != "" && profile.Token() != nil && profile.Token().AccessToken != "" {
 
-			log.Println("Got Profile but info something worng !!!! ")
+				fmt.Print("github access token:", profile.Token().AccessToken)
 
-			// w.WriteHeader(http.StatusUnauthorized)
+				prepareUserStarredRepo(profile.Nickname(), profile.Token().AccessToken)
+				saveSession(w, profile)
 
-			// return
+			} else {
+
+				log.Println("Got Profile but info something worng !!!! ")
+
+				// w.WriteHeader(http.StatusUnauthorized)
+				// return
+			}
 		}
 
 		//		saveSession(w, profile)
@@ -303,8 +301,8 @@ func sendTwilioAlert(repo string) {
 
 func main() {
 
-	os.Setenv("HTTP_PROXY", os.Getenv("FIXIE_URL"))
-	os.Setenv("HTTPS_PROXY", os.Getenv("FIXIE_URL"))
+	// os.Setenv("HTTP_PROXY", os.Getenv("FIXIE_URL"))
+	// os.Setenv("HTTPS_PROXY", os.Getenv("FIXIE_URL"))
 
 	fmt.Println("start main")
 	port := os.Getenv("PORT")
@@ -328,12 +326,12 @@ func main() {
 	r.GET("/login", gin.WrapH(&templateHandler{filename: "templates/login.html"}))
 	r.GET("/logout", cleanCookieAndToLoginPage)
 	r.GET("/auth/*action", gin.WrapF(loginHandler))
-	r.GET("/clock", gin.WrapH(websocket.Handler(func(ws *websocket.Conn) {
-		for {
-			fmt.Fprint(ws, "{When:'"+time.Now().Format(time.RFC3339)+"'}")
-			time.Sleep(1 * time.Second)
-		}
-	})))
+	// r.GET("/clock", gin.WrapH(websocket.Handler(func(ws *websocket.Conn) {
+	// 	for {
+	// 		fmt.Fprint(ws, "{When:'"+time.Now().Format(time.RFC3339)+"'}")
+	// 		time.Sleep(1 * time.Second)
+	// 	}
+	// })))
 
 	r.GET("/repos", getReposHandler)
 
