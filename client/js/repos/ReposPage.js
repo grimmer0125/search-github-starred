@@ -68,7 +68,7 @@ class ReposPage extends React.Component {
     this.state.queryStats = QueryStatus.QUERIED;
 
     // elasticsearch type
-    console.log('query result:', resp);
+    // console.log('query result:', resp);
     const hitsList = resp.hits.hits;
     this.state.total = resp.hits.total;// nbHits;
     // if (hitsList.length > 0) {

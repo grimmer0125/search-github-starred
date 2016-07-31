@@ -303,6 +303,9 @@ func sendTwilioAlert(repo string) {
 
 func main() {
 
+	os.Setenv("HTTP_PROXY", os.Getenv("FIXIE_URL"))
+	os.Setenv("HTTPS_PROXY", os.Getenv("FIXIE_URL"))
+
 	fmt.Println("start main")
 	port := os.Getenv("PORT")
 	if port == "" {
