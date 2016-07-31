@@ -6,11 +6,10 @@ let baseURL = '';
 
 if (window.location.hostname === 'localhost') {
   baseURL = 'http://localhost:5000';
-}
-else if (window.location.hostname === '0.0.0.0') {
+} else if (window.location.hostname === '0.0.0.0') {
   baseURL = 'http://localhost:5000';
 } else {
-  baseURL = 'https://' + window.location.hostname;
+  baseURL = window.location.protocol + '//' + window.location.hostname;
 }
 
 function getReposStatus() {
