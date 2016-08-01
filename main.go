@@ -14,8 +14,6 @@ import (
 	"text/template"
 	"time"
 
-	"errors"
-
 	"github.com/sfreiberg/gotwilio"
 
 	"github.com/gin-gonic/gin"
@@ -51,6 +49,7 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		data["UserData"] = v
 	}
+
 	data["Providers"] = oauth2.Providers()
 	t.templ.Execute(w, data)
 }
@@ -101,11 +100,16 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 			// return
 		} else {
-			if profile.Nickname() != "" && profile.Token() != nil && profile.Token().AccessToken != "" {
+
+			account := profile.Nickname()
+
+			if account != "" && profile.Token() != nil && profile.Token().AccessToken != "" {
 
 				fmt.Print("github access token:", profile.Token().AccessToken)
 
-				prepareUserStarredRepo(profile.Nickname(), profile.Token().AccessToken)
+				SetUserOrJustUpdateToken(account, profile.Token().AccessToken)
+				// prepareUserStarredRepo(profile.Nickname(), profile.Token().AccessToken)
+
 				saveSession(w, profile)
 
 			} else {
@@ -128,7 +132,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 func saveSession(w http.ResponseWriter, u oauth2.Profile) {
 	msg, _ := json.Marshal(map[string]interface{}{
-		"name": u.Nickname(), //displayname, not account name
+		"name":      u.Nickname(),
+		"authToken": u.Token().AccessToken,
 	})
 	http.SetCookie(w, &http.Cookie{
 		Name:    "auth",
@@ -153,43 +158,27 @@ func init() {
 	userMap = make(map[string]*GitHubUser)
 	_ = userMap
 }
-func setupUserToMap(account string, user *GitHubUser) {
-	mux.Lock()
-	userMap[account] = user
-	mux.Unlock()
-}
-func getUserFromMap(account string) (*GitHubUser, error) {
 
-	mux.Lock()
+// func prepareUserStarredRepo(account string, token string) {
+// account           string
+// accessToken       string
 
-	defer mux.Unlock()
+// 之後再做1.
+// 1. 如果再run當中的就不要再new/run了,
+//
+// 2. 假設前一個token還可以用,
+// 那此時第二個同一user的token好像會已經先傳回去? 還像同時兩個token也還好,
 
-	elem, ok := userMap[account]
-	if ok == true {
-		return elem, nil
-	}
-	return nil, errors.New("user does not exist")
-}
+// user := GitHubUser{account, token, NOTSTART, 0, 0}
+// setupUserToMap(account, &user)
 
-func prepareUserStarredRepo(account string, token string) {
-	// account           string
-	// accessToken       string
+// go user.GetStarredInfo()
 
-	// 之後再做1.
-	// 1. 如果再run當中的就不要再new/run了,
-	//
-	// 2. 假設前一個token還可以用,
-	// 那此時第二個同一user的token好像會已經先傳回去? 還像同時兩個token也還好,
-
-	user := GitHubUser{account, token, NOTSTART, 0, 0}
-	setupUserToMap(account, &user)
-	go user.GetStarredInfo()
-
-	// _, err = getStarredInfo(profile.Nickname(), profile.Token().AccessToken)
-	// if err != nil {
-	// 	log.Println("cant not get starred info.")
-	// }
-}
+// _, err = getStarredInfo(profile.Nickname(), profile.Token().AccessToken)
+// if err != nil {
+// 	log.Println("cant not get starred info.")
+// }
+// }
 
 func getReposHandler(c *gin.Context) {
 
@@ -198,41 +187,51 @@ func getReposHandler(c *gin.Context) {
 	ok := false
 	message := "no valid auth"
 
-	// log.Println("map len:", len(userMap))
-	// log.Println("map:", userMap)
-	// message := ""
-
-	if userMap == nil {
-		log.Println("usermap is nil")
-	}
+	// if userMap == nil {
+	// 	log.Println("usermap is nil")
+	// }
 
 	if authCookie, err := r.Cookie("auth"); err == nil {
-		// v.name !!
 		var v map[string]interface{}
-		// log.Println("authCookie: ", authCookie)
 		b, _ := base64.StdEncoding.DecodeString(authCookie.Value)
-		// log.Println("after decoded", string(b))
 		err := json.Unmarshal([]byte(b), &v)
-		// log.Println("after decoded map", v)
 
 		if err != nil {
 			log.Fatalf("Failed to Unmarshal: %v\n", err)
 
-		} else if account, ok2 := v["name"]; ok2 == true {
-			account2 := account.(string)
-			// log.Println("account2:", account2)
-			if user, _ := getUserFromMap(account2); user != nil {
-				log.Println("found out account:", user.account)
-				ok = true
+		} else if account2, ok2 := v["name"]; ok2 == true {
+			account := account2.(string)
+			if user, _ := GetUser(account); user != nil {
+				log.Println("found out account:", user.Account)
 
-				// status            string
-				// numOfStarred      int
+				tokenInCookie := v["authToken"].(string)
 
-				c.JSON(200, gin.H{
-					"status":        user.status,
-					"numOfStarred":  user.numOfStarred,
-					"githubAccount": account2,
-				})
+				// try to compare tokens
+				for _, token := range user.Tokens {
+					if token == tokenInCookie {
+						log.Println("found out the same token")
+						ok = true
+						break
+					}
+				}
+
+				if ok {
+					// start logic here
+					if user.Status == NOTSTART {
+						// TODO: if two clients use the same account simutaneously, still have race condition problems
+						go user.GetStarredInfo(tokenInCookie)
+
+						// prepareUserStarredRepo(account, tokenInCookie)
+					}
+
+					c.JSON(200, gin.H{
+						"status":        user.Status,
+						"numOfStarred":  user.NumOfStarred,
+						"githubAccount": account,
+					})
+				} else {
+					log.Println("can not found out the same token in DB")
+				}
 
 			} else {
 				log.Println("does not have the same key, force logout")
@@ -243,17 +242,8 @@ func getReposHandler(c *gin.Context) {
 					Path:   "/",
 					MaxAge: -1,
 				})
-				// w.Header()["Location"] = []string{"/"}
-				// w.WriteHeader(http.StatusTemporaryRedirect)
-				// cleanCookieAndToLoginPage2(c)
-
-				// return
 			}
 		}
-
-		// msg, _ := json.Marshal(map[string]interface{}{
-		// 	"name": u.Nickname(), //displayname, not account name
-		// })
 	} else {
 		message = "does not have cookie"
 	}
@@ -263,17 +253,9 @@ func getReposHandler(c *gin.Context) {
 			"message": message,
 		})
 	}
-
-	// name := c.Param("name")
-	// action := c.Param("action")
-	// message := name + " is " + action
-
-	// w := c.Writer
-	// message := "get your repos request !!!!!!"
-	// c.String(http.StatusOK, message)
-
 }
 
+// no use now
 func cleanCookieAndToLoginPage(c *gin.Context) {
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:   "auth",
@@ -301,6 +283,7 @@ func sendTwilioAlert(repo string) {
 
 func main() {
 
+	// testRedis()
 	// os.Setenv("HTTP_PROXY", os.Getenv("FIXIE_URL"))
 	// os.Setenv("HTTPS_PROXY", os.Getenv("FIXIE_URL"))
 

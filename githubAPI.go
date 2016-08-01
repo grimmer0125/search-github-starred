@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type GitHubRepo struct {
@@ -30,17 +31,19 @@ type GitHubRepo struct {
 // "description": repo["description"],
 // "homepage":    repo["homepage"],
 
-func GetReadme(token string, repoList []*GitHubRepo, j int, channel chan int) {
+func GetReadme(token string, repoList []*GitHubRepo, j int, sendWg *sync.WaitGroup) {
 
 	// log.Println("debug log:", j)
 	// repo := *repoList[j]
 	readmeURL := repoList[j].APIURL + "/readme"
 
-	// log.Println("try to get readme:", readmeURL)
+	log.Println("try to get readme:", readmeURL)
 	req, err := http.NewRequest("GET", readmeURL, nil)
 	if err != nil {
 		log.Println("new request error :", err)
-		channel <- j
+		// channel <- j
+		sendWg.Done()
+
 		return
 	}
 	req.Header.Set("Authorization", "Bearer "+token)
@@ -51,7 +54,9 @@ func GetReadme(token string, repoList []*GitHubRepo, j int, channel chan int) {
 	if err != nil {
 		log.Println("res error to readme:", err)
 
-		channel <- j
+		// channel <- j
+		sendWg.Done()
+
 		return
 	}
 
@@ -75,7 +80,11 @@ func GetReadme(token string, repoList []*GitHubRepo, j int, channel chan int) {
 		res.Body.Close()
 	}
 
-	channel <- j
+	// channel <- j
+
+	log.Println("try to get readme done:", readmeURL)
+
+	sendWg.Done()
 
 }
 
@@ -85,32 +94,40 @@ func GetReposReadme(token string, repoList []*GitHubRepo) error {
 
 	log.Println("try getting all readme:", lenList)
 
-	c := make(chan int, lenList)
-	checkList := make([]int, lenList)
+	// c := make(chan int, lenList)
+	// checkList := make([]int, lenList)
+
+	var sendWg *sync.WaitGroup
+	sendWg = new(sync.WaitGroup)
 
 	for i := 0; i < lenList; i++ {
-		go GetReadme(token, repoList, i, c)
+		sendWg.Add(1)
+
+		go GetReadme(token, repoList, i, sendWg)
 	}
+	log.Println("start to wait")
+	sendWg.Wait()
+	log.Println("end to wait")
 
-	for i := range c {
+	// for i := range c {
 
-		checkList[i] = 1
-		allGet := true
+	// 	checkList[i] = 1
+	// 	allGet := true
 
-		for j := 0; j < len(checkList); j++ {
-			if checkList[j] == 0 {
-				allGet = false
-				break
-			}
-		}
+	// 	for j := 0; j < len(checkList); j++ {
+	// 		if checkList[j] == 0 {
+	// 			allGet = false
+	// 			break
+	// 		}
+	// 	}
 
-		if allGet == true {
-			log.Println("check list:get all")
-			close(c)
-		} else {
-			// log.Println("check list:not get all")
-		}
-	}
+	// 	if allGet == true {
+	// 		log.Println("check list:get all")
+	// 		close(c)
+	// 	} else {
+	// 		// log.Println("check list:not get all")
+	// 	}
+	// }
 
 	log.Println("after getting all readme")
 

@@ -1,6 +1,9 @@
 package main
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 // package singleton
 
@@ -13,11 +16,12 @@ const (
 )
 
 type GitHubUser struct {
-	account           string
-	accessToken       string
-	status            string
-	numOfStarred      int
-	indicesOfStarrerd int
+	Account string `json:"account"`
+	// AccessToken       string `json:"accessToken"`
+	Tokens            []string `json:"tokens"`
+	Status            string   `json:"status"`
+	NumOfStarred      int
+	IndicesOfStarrerd int
 }
 
 // go getStarredInfo(account, token)
@@ -30,22 +34,30 @@ type GitHubUser struct {
 
 // func GetStarredInfo(tokenOwner, token string) (map[string]interface{}, error) {
 
-func (user *GitHubUser) GetStarredInfo() {
+func (user *GitHubUser) GetStarredInfo(token string) {
 
-	user.status = FETCHING
-	repoList, _ := GetStarredInfo(user.account, user.accessToken)
-	user.status = INDEXING
+	user.Status = FETCHING
+	SetUser(user.Account, *user)
+
+	repoList, _ := GetStarredInfo(user.Account, token)
+
+	user.Status = INDEXING
 	len := len(repoList)
-	user.numOfStarred = len
-	log.Println("get number of starred:", user.numOfStarred)
+	user.NumOfStarred = len
+	SetUser(user.Account, *user)
+
+	log.Println("get number of starred:", user.NumOfStarred)
 
 	// b, _ := json.Marshal(&repoList)
 	// fmt.Println("total repo:", string(b))
 
-	//try to indexing
-	err := SendToAlgolia(repoList, user.account)
+	// try to indexing
+	err := SendToAlgolia(repoList, user.Account)
+	fmt.Println("after send")
+
 	if err == nil {
-		user.status = INDEXED
+		user.Status = INDEXED
+		SetUser(user.Account, *user)
 	}
 }
 
