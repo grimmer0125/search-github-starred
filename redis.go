@@ -3,21 +3,23 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"flag"
 	"fmt"
 	"log"
+	"os"
+	"strings"
 
 	"github.com/garyburd/redigo/redis"
 )
 
-var (
-	redisAddress   = flag.String("redis-address", ":6379", "Address to the Redis server")
-	maxConnections = flag.Int("max-connections", 10, "Max connections to Redis")
-)
+// var (
+// 	redisAddress   = flag.String("redis-address", ":6379", "Address to the Redis server")
+// 	maxConnections = flag.Int("max-connections", 10, "Max connections to Redis")
+// )
 
 // REDIS_URL ?
 
-const url = "ec2-23-23-129-214.compute-1.amazonaws.com:13789"
+// const url = "ec2-23-23-129-214.compute-1.amazonaws.com:13789"
+// const redisPWD = "p11u0qdj8ed5d78mjfbbgvjfnlk"
 
 var (
 	con redis.Conn
@@ -121,21 +123,39 @@ func testRedis() {
 // 	return instance
 // }
 
-func close() {
+func close(con redis.Conn) {
 	defer con.Close()
 }
-func init() {
+
+func connect() redis.Conn {
+
+	db_url := os.Getenv("REDIS_URL")
+	i := strings.Index(db_url, "@")
+	// log.Println("@ is at:", i)
+	j := strings.Index(db_url, "h:")
+	redisPWD := db_url[(j + 2):i]
+	url := db_url[(i + 1):len(db_url)]
+
+	log.Println("url:", url)
+	// log.Println("pwd:", redisPWD)
+
 	log.Println("redis init")
 	c, err := redis.Dial("tcp", url)
 	if err != nil {
-		return //nil, err
+		log.Println("redis dial fail")
+
+		return nil //nil, err
 	}
-	if _, err := c.Do("AUTH", "p11u0qdj8ed5d78mjfbbgvjfnlk"); err != nil {
+	if _, err := c.Do("AUTH", redisPWD); err != nil {
 		c.Close()
-		return //nil, err
+		log.Println("redis auth fail")
+
+		return nil //nil, err
 	}
 
-	con = c
+	log.Println("redis init ok !!!")
+
+	return c
 }
 
 // func SetUser(account string, user *GitHubUser) error {
@@ -177,6 +197,9 @@ func SetUserToDB(account string, user GitHubUser) error {
 
 	// key8 := "key8"
 	// user := GitHubUser{"1", "1", "1", 8, 3}
+
+	con := connect()
+	defer close(con)
 	value, _ := json.Marshal(user)
 	_, err := con.Do("SET", account, value)
 	if err != nil {
@@ -203,6 +226,8 @@ func GetUser(account string) (*GitHubUser, error) {
 
 func GetUserFromDB(account string) (*GitHubUser, bool) {
 
+	con := connect()
+	defer close(con)
 	log.Println("try to get user from db:", account)
 	value, err := redis.Bytes(con.Do("GET", account))
 	if err != nil {
