@@ -32,7 +32,7 @@ function getReposStatus() {
   });
 }
 
-
+// can not use .com/ , because the limiation of aws policy
 const client = new elasticsearch.Client({
   host: 'https://search-searchgithub-7c4xubb6ne3t7keszcai7kqi3m.us-west-2.es.amazonaws.com/githubrepos',
 });

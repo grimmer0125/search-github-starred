@@ -11,6 +11,11 @@ import {
   FETCH_STARRRED_STATUS,
 } from './actionTypes';
 
+// testing
+// api.queryToServer('react', 'grimmer0125', 0, (resp) => {
+//   console.log('get the resp:', resp);
+// });
+
 class RepoList extends React.Component {
 
   render() {
@@ -130,7 +135,7 @@ class ReposPage extends React.Component {
 
   handleReIndex() {
     console.log('re-index, redirect to login page');
-    const location = '/login';
+    const location = '/repos/_reindex';
     window.location = location;
   }
 
@@ -336,7 +341,7 @@ class ReposPage extends React.Component {
 
     switch (fetchingStatus) {
       case FetchingStatus.NOTSTART:
-        statusStr = 'Fetching is not started yet';
+        statusStr = 'Loading';// 'Fetching is not started yet';
         break;
       case FetchingStatus.FETCHING:
         statusStr = 'It is fetching, wait a moment...';

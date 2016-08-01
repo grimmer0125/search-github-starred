@@ -205,7 +205,7 @@ func GetUserFromDB(account string) (*GitHubUser, bool) {
 		return nil, false
 	}
 
-	fmt.Println("user json value:", string(value))
+	// fmt.Println("user json value:", string(value))
 
 	var object GitHubUser
 	err = json.Unmarshal(value, &object)

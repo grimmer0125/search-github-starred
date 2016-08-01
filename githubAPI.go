@@ -37,7 +37,7 @@ func GetReadme(token string, repoList []*GitHubRepo, j int, sendWg *sync.WaitGro
 	// repo := *repoList[j]
 	readmeURL := repoList[j].APIURL + "/readme"
 
-	log.Println("try to get readme:", readmeURL)
+	// log.Println("try to get readme:", readmeURL)
 	req, err := http.NewRequest("GET", readmeURL, nil)
 	if err != nil {
 		log.Println("new request error :", err)
@@ -82,7 +82,7 @@ func GetReadme(token string, repoList []*GitHubRepo, j int, sendWg *sync.WaitGro
 
 	// channel <- j
 
-	log.Println("try to get readme done:", readmeURL)
+	// log.Println("try to get readme done:", readmeURL)
 
 	sendWg.Done()
 

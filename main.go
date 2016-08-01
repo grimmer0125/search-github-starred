@@ -180,6 +180,35 @@ func init() {
 // }
 // }
 
+func getReposActionHandler(c *gin.Context) {
+
+	log.Println("getReposActionHandler")
+	r := c.Request
+
+	if authCookie, err := r.Cookie("auth"); err == nil {
+		var v map[string]interface{}
+		b, _ := base64.StdEncoding.DecodeString(authCookie.Value)
+		err := json.Unmarshal([]byte(b), &v)
+
+		if err != nil {
+			log.Fatalf("Failed to Unmarshal: %v\n", err)
+
+		} else if account2, ok2 := v["name"]; ok2 == true {
+			account := account2.(string)
+			if user, _ := GetUser(account); user != nil {
+				log.Println("found out account:", user.Account)
+				user.Status = NOTSTART
+				SetUser(user.Account, *user)
+			}
+		}
+	}
+
+	cleanCookieAndToLoginPage(c)
+	// c.JSON(http.StatusUnauthorized, gin.H{
+	// 		"message": "",
+	// })
+}
+
 func getReposHandler(c *gin.Context) {
 
 	log.Println("/repos")
@@ -255,7 +284,6 @@ func getReposHandler(c *gin.Context) {
 	}
 }
 
-// no use now
 func cleanCookieAndToLoginPage(c *gin.Context) {
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:   "auth",
@@ -315,7 +343,7 @@ func main() {
 	// 		time.Sleep(1 * time.Second)
 	// 	}
 	// })))
-
+	r.GET("/repos/*action", getReposActionHandler)
 	r.GET("/repos", getReposHandler)
 
 	log.Println("Start web server. Port: ", *addr)
