@@ -150,11 +150,14 @@ func SetUserOrJustUpdateToken(account string, token string) {
 	var user GitHubUser
 
 	if ok == true {
+		log.Println("update a user")
+
 		// update it
 		user = *elem
 		user.Tokens = append(user.Tokens, token)
 	} else {
 		// add it
+		log.Println("add a new user")
 		user = GitHubUser{account, []string{token}, NOTSTART, 0, 0}
 	}
 
@@ -177,7 +180,9 @@ func SetUserToDB(account string, user GitHubUser) error {
 	value, _ := json.Marshal(user)
 	_, err := con.Do("SET", account, value)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("set user to db error:", err)
+	} else {
+		fmt.Println("set user to db ok")
 	}
 
 	return err

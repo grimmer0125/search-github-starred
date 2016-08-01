@@ -232,8 +232,13 @@ func getReposHandler(c *gin.Context) {
 			account := account2.(string)
 			if user, _ := GetUser(account); user != nil {
 				log.Println("found out account:", user.Account)
+				log.Println("cookie:", v)
 
 				tokenInCookie := v["authToken"].(string)
+
+				log.Println("found out after token")
+				log.Println("tokenIncookie:", tokenInCookie)
+				log.Println("user.Tokens in DB:", user)
 
 				// try to compare tokens
 				for _, token := range user.Tokens {
@@ -245,6 +250,8 @@ func getReposHandler(c *gin.Context) {
 				}
 
 				if ok {
+					log.Println("found out the same token in DB")
+
 					// start logic here
 					if user.Status == NOTSTART {
 						// TODO: if two clients use the same account simutaneously, still have race condition problems
