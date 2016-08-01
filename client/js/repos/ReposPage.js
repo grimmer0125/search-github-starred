@@ -341,7 +341,7 @@ class ReposPage extends React.Component {
 
     switch (fetchingStatus) {
       case FetchingStatus.NOTSTART:
-        statusStr = 'Loading';// 'Fetching is not started yet';
+        statusStr = 'Loading...';// 'Fetching is not started yet';
         break;
       case FetchingStatus.FETCHING:
         statusStr = 'It is fetching, wait a moment...';
