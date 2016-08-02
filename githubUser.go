@@ -52,7 +52,7 @@ func (user *GitHubUser) GetStarredInfo(token string) {
 	// fmt.Println("total repo:", string(b))
 
 	// try to indexing
-	err := SendToAlgolia(repoList, user.Account)
+	err := SendToGitHubElasticsearch(repoList, user.Account)
 	fmt.Println("after send")
 
 	if err == nil {

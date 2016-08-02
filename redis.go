@@ -136,10 +136,10 @@ func connect() redis.Conn {
 	redisPWD := db_url[(j + 2):i]
 	url := db_url[(i + 1):len(db_url)]
 
-	log.Println("url:", url)
+	// log.Println("url:", url)
 	// log.Println("pwd:", redisPWD)
 
-	log.Println("redis init")
+	// log.Println("redis init")
 	c, err := redis.Dial("tcp", url)
 	if err != nil {
 		log.Println("redis dial fail")
@@ -153,7 +153,7 @@ func connect() redis.Conn {
 		return nil //nil, err
 	}
 
-	log.Println("redis init ok !!!")
+	// log.Println("redis init ok !!!")
 
 	return c
 }
@@ -228,7 +228,7 @@ func GetUserFromDB(account string) (*GitHubUser, bool) {
 
 	con := connect()
 	defer close(con)
-	log.Println("try to get user from db:", account)
+	// log.Println("try to get user from db:", account)
 	value, err := redis.Bytes(con.Do("GET", account))
 	if err != nil {
 		fmt.Println("get account json fail:", err)

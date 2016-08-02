@@ -182,7 +182,7 @@ func init() {
 
 func getReposActionHandler(c *gin.Context) {
 
-	log.Println("getReposActionHandler")
+	log.Println("get-reindex in getReposActionHandler")
 	r := c.Request
 
 	if authCookie, err := r.Cookie("auth"); err == nil {
@@ -196,7 +196,7 @@ func getReposActionHandler(c *gin.Context) {
 		} else if account2, ok2 := v["name"]; ok2 == true {
 			account := account2.(string)
 			if user, _ := GetUser(account); user != nil {
-				log.Println("found out account:", user.Account)
+				log.Println("found out account, and reset to notstart index:", user.Account)
 				user.Status = NOTSTART
 				SetUser(user.Account, *user)
 			}
@@ -232,13 +232,13 @@ func getReposHandler(c *gin.Context) {
 			account := account2.(string)
 			if user, _ := GetUser(account); user != nil {
 				log.Println("found out account:", user.Account)
-				log.Println("cookie:", v)
+				// log.Println("cookie:", v)
 
 				tokenInCookie := v["authToken"].(string)
 
-				log.Println("found out after token")
-				log.Println("tokenIncookie:", tokenInCookie)
-				log.Println("user.Tokens in DB:", user)
+				// log.Println("found out after token")
+				// log.Println("tokenIncookie:", tokenInCookie)
+				// log.Println("user.Tokens in DB:", user)
 
 				// try to compare tokens
 				for _, token := range user.Tokens {
@@ -250,7 +250,7 @@ func getReposHandler(c *gin.Context) {
 				}
 
 				if ok {
-					log.Println("found out the same token in DB")
+					// log.Println("found out the same token in DB")
 
 					// start logic here
 					if user.Status == NOTSTART {
@@ -318,6 +318,8 @@ func sendTwilioAlert(repo string) {
 
 func main() {
 
+	// testScroll(testElastic(), "grimmer0125")
+	// return
 	// testRedis()
 	// os.Setenv("HTTP_PROXY", os.Getenv("FIXIE_URL"))
 	// os.Setenv("HTTPS_PROXY", os.Getenv("FIXIE_URL"))
