@@ -62,7 +62,7 @@ func useScrollToDelete(client *elastic.Client, account string) {
 			// Iterate through results
 			for _, hit := range searchResult.Hits.Hits {
 
-				fmt.Println("got id:", hit.Id)
+				// fmt.Println("got id:", hit.Id)
 
 				request := elastic.NewBulkDeleteRequest().Index(githubIndex).Type(account).Id(hit.Id)
 
