@@ -9,7 +9,7 @@
 }
 
 .flex-column{
-        flex: 1 1 0%;
+        flex: 1;//1 1 0%;
    max-width: 100%;
   /*max-height: 0%; firefox will has strange UI for 0% */
   box-sizing: border-box;

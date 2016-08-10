@@ -12,4 +12,4 @@ ReactDOM.render(
 );
 
 
-console.log('into index.js');
+// console.log('into index.js');

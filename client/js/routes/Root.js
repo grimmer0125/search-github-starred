@@ -19,7 +19,7 @@ const history = syncHistoryWithStore(browserHistory, store);
 export default function Root() {
   return (
     <Provider store={store}>
-      <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
+      <div className="layout-column-start-center" style={{ width: '100%' }}>
         <Router history={history}>
           <Route path="/" component={Repos.component} />
         </Router>

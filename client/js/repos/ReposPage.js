@@ -321,7 +321,7 @@ class ReposPage extends React.Component {
         <div>
           <a href="https://grimmer.io/">About me</a>
         </div>
-        <div className="flex-row">
+        <div className="flex-column">
           <span>{statusStr}</span>
           <button onClick={this.handleReIndex}>Re-Index</button>
         </div>
