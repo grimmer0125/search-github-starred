@@ -77,6 +77,9 @@ func useScrollToDelete(client *elastic.Client, account string) {
 	log.Println("numbe of delete requests:", bulkRequest.NumberOfActions())
 	bulkResponse, err := bulkRequest.Do()
 	if err != nil {
+
+		//		get bulk error: elastic: No bulk actions to commit !!!!
+
 		log.Println("get bulk error:", err)
 		// t.Fatal(err)
 		return
@@ -148,44 +151,49 @@ func SendToGitHubElasticsearch(repoList []*GitHubRepo, account string) error {
 	// }
 
 	// bulk - add
-	bulkRequest := client.Bulk()
+	var err error
+	if len(repoList) > 0 {
+		bulkRequest := client.Bulk()
+		for i, repo := range repoList {
 
-	for i, repo := range repoList {
+			objectID := strconv.Itoa(i)
+			// log.Println("repo:", *repo)
+			index := elastic.NewBulkIndexRequest().Index(githubIndex).Type(account).Id(objectID).Doc(*repo)
+			bulkRequest = bulkRequest.Add(index)
+		}
+		// tweet3 := make(map[string]interface{})
+		// tweet3["user2"] = "x21"
+		// tweet3["message2"] = "x22"
 
-		objectID := strconv.Itoa(i)
-		// log.Println("repo:", *repo)
-		index := elastic.NewBulkIndexRequest().Index(githubIndex).Type(account).Id(objectID).Doc(*repo)
-		bulkRequest = bulkRequest.Add(index)
-	}
-	// tweet3 := make(map[string]interface{})
-	// tweet3["user2"] = "x21"
-	// tweet3["message2"] = "x22"
+		// tweet3 := map[string]interface{}
+		//tweet1 := GitHubRepo{"1", "1", "1", "1", "1", "1", "1", "1"}
+		// tweet1 := Tweet{User: "olivere22", Message: "Welcome to Golang and Elasticsearch."}
+		// tweet2 := Tweet{User: "sandrae22", Message: "Dancing all night long. Yeah."}
 
-	// tweet3 := map[string]interface{}
-	//tweet1 := GitHubRepo{"1", "1", "1", "1", "1", "1", "1", "1"}
-	// tweet1 := Tweet{User: "olivere22", Message: "Welcome to Golang and Elasticsearch."}
-	// tweet2 := Tweet{User: "sandrae22", Message: "Dancing all night long. Yeah."}
+		// index1Req := elastic.NewBulkIndexRequest().Index("repo").Type("tweet").Id("91").Doc(tweet1)
+		// index2Req := elastic.NewBulkIndexRequest().Index("twitter1271").Type("tweet").Id("3").Doc(tweet3)
 
-	// index1Req := elastic.NewBulkIndexRequest().Index("repo").Type("tweet").Id("91").Doc(tweet1)
-	// index2Req := elastic.NewBulkIndexRequest().Index("twitter1271").Type("tweet").Id("3").Doc(tweet3)
+		// // // bulkRequest := client.Bulk()
+		// bulkRequest = bulkRequest.Add(index1Req)
+		// bulkRequest = bulkRequest.Add(index2Req)
 
-	// // // bulkRequest := client.Bulk()
-	// bulkRequest = bulkRequest.Add(index1Req)
-	// bulkRequest = bulkRequest.Add(index2Req)
+		log.Println("numbe of add requests:", bulkRequest.NumberOfActions())
+		bulkResponse, err := bulkRequest.Do()
+		if err != nil {
+			log.Println("get bulk error:", err)
+			// t.Fatal(err)
+			return err
+		}
+		log.Println("after, number of add requests:", bulkRequest.NumberOfActions())
 
-	log.Println("numbe of add requests:", bulkRequest.NumberOfActions())
-	bulkResponse, err := bulkRequest.Do()
-	if err != nil {
-		log.Println("get bulk error:", err)
-		// t.Fatal(err)
-		return err
-	}
-	log.Println("after, numbe of add requests:", bulkRequest.NumberOfActions())
-
-	if bulkResponse == nil {
-		log.Println("expected bulkResponse to be != nil; got nil")
+		if bulkResponse == nil {
+			log.Println("expected bulkResponse to be != nil; got nil")
+		} else {
+			log.Println("buld resp ok")
+		}
 	} else {
-		log.Println("buld resp ok")
+		log.Println("repo list is empty, so directly return error nil")
+		err = nil
 	}
 
 	log.Println("use elasticsearch done")
