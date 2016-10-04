@@ -1,8 +1,5 @@
 const path = require('path');
-// const webpack = require('webpack');
 const autoprefixer = require('autoprefixer');
-
-// const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 // App file paths
 const PATHS = {
@@ -11,28 +8,6 @@ const PATHS = {
   build: path.resolve(__dirname, '../build-client'),
   node_modules: path.resolve(__dirname, '../node_modules'),
 };
-
-// const plugins = [
-  // Shared code
-  // new webpack.optimize.CommonsChunkPlugin('vendor', 'js/vendor.bundle.js'),
-  // // make sure we can use Promise / fetch without importing them
-  // // Always use bluebird even if native promises exist, only use fetch if we need to
-  // new webpack.ProvidePlugin({
-  //   'Promise': 'bluebird',
-  //   'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
-  // }),
-  // // Avoid publishing files when compilation fails
-  // new webpack.NoErrorsPlugin(),
-//   new webpack.DefinePlugin({
-//     'process.env.NODE_ENV': JSON.stringify('development'),
-//     __DEV__: JSON.stringify(JSON.parse(process.env.DEBUG || 'true'))
-//   }),
-//   // new webpack.optimize.OccurrenceOrderPlugin(),
-//   // Populate the HTML file with the css / js files
-//   // new HtmlWebpackPlugin({
-//   //   template: 'src/index.html'
-//   // })
-// ];
 
 const sassLoaders = [
   'style-loader',
@@ -47,19 +22,8 @@ module.exports = {
   output: {
     path: PATHS.build,
     filename: 'bundle.js',
-    // filename: 'js/[name].js',
-    // publicPath: '/'
   },
-  // stats: {
-  //   colors: true,
-  //   reasons: true
-  // },
   resolve: {
-    // // make sure everything's using the same version of React
-    // alias: {
-    //   'react': path.join(__dirname, '..', 'node_modules', 'react')
-    // },
-    // allow you to require('file') instead of require('file.jsx')
     extensions: ['', '.js', '.jsx'],
   },
   module: {
@@ -74,7 +38,6 @@ module.exports = {
           presets: ['es2015'],
           plugins: ['transform-runtime'],
         },
-        // include: PATHS.app
       },
       {
         test: /\.scss$/,
@@ -91,7 +54,6 @@ module.exports = {
       // }
     ],
   },
-  // plugins: plugins,
   postcss() {
     return [autoprefixer({
       browsers: ['last 2 versions'],

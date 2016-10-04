@@ -25,8 +25,6 @@ type templateHandler struct {
 	templ    *template.Template
 }
 
-//    {{.UserData.name}}
-
 func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Println("/login or /")
 
@@ -37,7 +35,7 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"Host": r.Host,
 	}
 	if authCookie, err := r.Cookie("auth"); err == nil {
-		// v.name !!
+
 		var v map[string]interface{}
 		log.Println("authCookie: ", authCookie)
 		b, _ := base64.StdEncoding.DecodeString(authCookie.Value)
@@ -91,8 +89,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			log.Println("Failed to Profile !!!! ", providerName, "-", err)
-			// c.JSON(401, gin.H{"status": "unauthorized"})
 
+			// c.JSON(401, gin.H{"status": "unauthorized"})
 			// Write([]byte) (int, error)
 			// w.WriteHeader(http.StatusUnauthorized)
 
@@ -106,7 +104,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 				fmt.Print("github access token:", profile.Token().AccessToken)
 
 				SetUserOrJustUpdateToken(account, profile.Token().AccessToken)
-				// prepareUserStarredRepo(profile.Nickname(), profile.Token().AccessToken)
 
 				saveSession(w, profile)
 
@@ -156,27 +153,6 @@ func init() {
 	userMap = make(map[string]*GitHubUser)
 	_ = userMap
 }
-
-// func prepareUserStarredRepo(account string, token string) {
-// account           string
-// accessToken       string
-
-// 之後再做1.
-// 1. 如果再run當中的就不要再new/run了,
-//
-// 2. 假設前一個token還可以用,
-// 那此時第二個同一user的token好像會已經先傳回去? 還像同時兩個token也還好,
-
-// user := GitHubUser{account, token, NOTSTART, 0, 0}
-// setupUserToMap(account, &user)
-
-// go user.GetStarredInfo()
-
-// _, err = getStarredInfo(profile.Nickname(), profile.Token().AccessToken)
-// if err != nil {
-// 	log.Println("cant not get starred info.")
-// }
-// }
 
 func getReposActionHandler(c *gin.Context) {
 
@@ -250,12 +226,15 @@ func getReposHandler(c *gin.Context) {
 				if ok {
 					// log.Println("found out the same token in DB")
 
-					// start logic here
+					// 之後再做todo 1.
+					// 1. 如果再run當中的就不要再new/run了,
+					// p.s. . 假設前一個token還可以用,
+					// 那此時第二個同一user的token好像會已經先傳回去? 好像同時兩個token也還好,
+
 					if user.Status == NOTSTART {
 						// TODO: if two clients use the same account simutaneously, still have race condition problems
 						go user.GetStarredInfo(tokenInCookie)
 
-						// prepareUserStarredRepo(account, tokenInCookie)
 					}
 
 					c.JSON(200, gin.H{
@@ -316,9 +295,6 @@ func sendTwilioAlert(repo string) {
 
 func main() {
 
-	// testScroll(testElastic(), "grimmer0125")
-	// return
-	// testRedis()
 	// os.Setenv("HTTP_PROXY", os.Getenv("FIXIE_URL"))
 	// os.Setenv("HTTPS_PROXY", os.Getenv("FIXIE_URL"))
 

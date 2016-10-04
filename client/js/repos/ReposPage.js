@@ -1,11 +1,8 @@
 import React from 'react';
 import FetchingStatus from './constants';
 import { connect } from 'react-redux';
-import algoliasearch from 'algoliasearch';
-// import { reduxForm } from 'redux-form';
-// import { bindActionCreators } from 'redux';
+// import algoliasearch from 'algoliasearch';
 import api from '../api';
-
 
 import {
   FETCH_STARRRED_STATUS,
@@ -66,7 +63,7 @@ class ReposPage extends React.Component {
     this.setState({ textOnQueryInput: e.target.value });
   }
 
-  // TODO: should add handling error case, e.g. currentPage --
+  // TODO: should add handling error case, e.g. currentPage
   // 1. error就回到第一頁或是query前一頁.
   // 2. handlePrev 直接改成用local資料, 這樣就還是可以把page++的logic放在得到資料時, 不然
   handleQueryData(resp) {
@@ -75,14 +72,9 @@ class ReposPage extends React.Component {
     // elasticsearch type
     // console.log('query result:', resp);
     const hitsList = resp.hits.hits;
-    this.state.total = resp.hits.total;// nbHits;
-    // if (hitsList.length > 0) {
-    //   this.state.currentPage++;// = content.page; // ????
-    // }
-    // this.state.queryCursor = content.query; ??????
+    this.state.total = resp.hits.total;
 
-    this.state.totalPage = // content.nbPages;
-    Math.ceil(this.state.total / api.pageSize);
+    this.state.totalPage = Math.ceil(this.state.total / api.pageSize);
     // resp.hits.total /api.pageSize
 
     // algolia type
@@ -107,8 +99,6 @@ class ReposPage extends React.Component {
       }
     }
 
-    // const nextItems = this.state.items.concat([{ text: this.state.text, id: Date.now() }]);
-    // const nextText = '';
     this.setState({ hits: nextItems });
   }
 
@@ -128,9 +118,6 @@ class ReposPage extends React.Component {
     this.state.currentPage - 1, this.handleQueryData);
 
     this.state.currentPage--;
-    // if (hitsList.length > 0) {
-    //   this.state.currentPage++;// = content.page; // ????
-    // }
   }
 
   handleReIndex() {
@@ -157,8 +144,6 @@ class ReposPage extends React.Component {
       }
     }
   }
-
-  /* <h3>Starred Repo</h3>*/
 
   renderReposComponents() {
     // const { repos } = this.props;
@@ -188,34 +173,22 @@ class ReposPage extends React.Component {
         );
   }
 
-
-//  expect(handleSubmit(submit, values, props, asyncValidate)).toBe(undefined);
-
-  // handleSubmit() {
-  //   console.log('handleSubmit');
-  // }
-
   componentWillMount() {
-    // const { businessId, getBillingData } = this.props;
     if (!this.hasData()) {
       this.startPoll();
     }
   }
 
   componentDidMount() {
-    // const fetchAction = bindActionCreators(fetchDevices, this.props.dispatch);
-    // fetchAction();
-  }
 
+  }
 
   componentWillReceiveProps(nextProps) {
     console.log('componentWillReceiveProps');
     if (this.props.repos !== nextProps.repos) {
       console.log('different Props');
 
-
       // Optionally do something with data
-
       // if (!nextProps.isFetching) {
       //   this.startPoll();
       // }
@@ -234,56 +207,49 @@ class ReposPage extends React.Component {
   // hitsPerPage
   // page:
   // filters: "facet1 AND facet2"
-  queryToServer(query, account, page = 0) {
-    const appID = 'EQDRH6QSH7';
-    const key = '6066c3e492d3a35cc0a425175afa89ff';
-    const indexName = 'githubRepo';
-    const attributesToSnippet = ['readmd:5', 'description:5', 'homepage:5', 'repoURL:5'];
-    // const facet = 'starredBy:' + account;
-    // const facetFilters = [facet];
-    const filters = 'starredBy:' + account;
+  // algoliasearch part
+  // queryToServer(query, account, page = 0) {
+  //   const appID = 'EQDRH6QSH7';
+  //   const key = '6066c3e492d3a35cc0a425175afa89ff';
+  //   const indexName = 'githubRepo';
+  //   const attributesToSnippet = ['readmd:5', 'description:5', 'homepage:5', 'repoURL:5'];
+  //   // const facet = 'starredBy:' + account;
+  //   // const facetFilters = [facet];
+  //   const filters = 'starredBy:' + account;
+  //
+  //   const client = algoliasearch(appID, key);
+  //   const index = client.initIndex(indexName);
+  //   const typoTolerance = false;
+  //
+  //   index.search(query, { attributesToSnippet, filters, page, typoTolerance }, (err, content) => {
+  //     this.state.queryStats = QueryStatus.QUERIED;
+  //
+  //     if (err) {
+  //       console.log('error:', err);
+  //     }
+  //     console.log('content:', content);
+  //
+  //     this.state.total = content.nbHits;
+  //     this.state.currentPage = content.page;
+  //     this.state.totalPage = content.nbPages;
+  //     this.state.queryStats = QueryStatus.QUERIED;
+  //
+  //     const hitsList = content.hits;
+  //     const nextItems = [];
+  //     const checkDict = {};
+  //     for (const hit of hitsList) {
+  //       if (checkDict.hasOwnProperty(hit.repoURL) === false) {
+  //         const item = { url: hit.repoURL,
+  //           id: hit.repoURL, desc: hit.description, repofullName: hit.repofullName };
+  //         checkDict[hit.repoURL] = 1;
+  //         nextItems.push(item);
+  //       }
+  //     }
+  //
+  //     this.setState({ hits: nextItems });
+  //   });
+  // }
 
-    const client = algoliasearch(appID, key);
-    const index = client.initIndex(indexName);
-    const typoTolerance = false;
-
-    index.search(query, { attributesToSnippet, filters, page, typoTolerance }, (err, content) => {
-      this.state.queryStats = QueryStatus.QUERIED;
-
-      if (err) {
-        console.log('error:', err);
-      }
-      console.log('content:', content);
-
-      this.state.total = content.nbHits;
-      this.state.currentPage = content.page;
-      this.state.totalPage = content.nbPages;
-      this.state.queryStats = QueryStatus.QUERIED;
-
-      const hitsList = content.hits;
-      const nextItems = [];
-      const checkDict = {};
-      for (const hit of hitsList) {
-        if (checkDict.hasOwnProperty(hit.repoURL) === false) {
-          const item = { url: hit.repoURL,
-            id: hit.repoURL, desc: hit.description, repofullName: hit.repofullName };
-          checkDict[hit.repoURL] = 1;
-          nextItems.push(item);
-        }
-      }
-
-      // const nextItems = this.state.items.concat([{ text: this.state.text, id: Date.now() }]);
-      // const nextText = '';
-      this.setState({ hits: nextItems });
-    });
-  }
-
-  // const type = 'DELETE_DEVICE';
-  // this.props.dispatch({ type, payload: { sn } });
-  // dispatch({type: 'USER_FETCH_REQUESTED', payload: {userId}})
-
-  // ref: http://notjoshmiller.com/ajax-polling-in-react-with-redux/
-//  this.timeout = setTimeout(() => this.props.dataActions.dataFetch(), 15000);
   startPoll() {
     const { dispatch } = this.props;
     // console.log('status timer runs !!!');
@@ -394,23 +360,18 @@ export function mapStateToProps(state) {
   };
 }
 
+export default connect(mapStateToProps)(ReposPage);
+
 // export function mapDispatchToProps(dispatch) {
 //   return bindActionCreators({
 //     xxx: actions.xxx
-
 //   }, dispatch);
 // }
-
-
-//
 
 // ReposPage = reduxForm({ // <----- THIS IS THE IMPORTANT PART!
 //   form: 'contact',                           // a unique name for this form
 //   fields: ['firstName', 'lastName', 'email'], // all the fields in your form
 // })(ReposPage);
-
-export default connect(mapStateToProps)(ReposPage);
-
 
 //
 // // index.search("react", {

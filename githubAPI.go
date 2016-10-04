@@ -80,8 +80,6 @@ func GetReadme(token string, repoList []*GitHubRepo, j int, sendWg *sync.WaitGro
 		res.Body.Close()
 	}
 
-	// channel <- j
-
 	// log.Println("try to get readme done:", readmeURL)
 
 	sendWg.Done()
@@ -107,42 +105,19 @@ func GetReposReadme(token string, repoList []*GitHubRepo) error {
 	}
 	log.Println("start to wait")
 	sendWg.Wait()
-	log.Println("end to wait")
-
-	// for i := range c {
-
-	// 	checkList[i] = 1
-	// 	allGet := true
-
-	// 	for j := 0; j < len(checkList); j++ {
-	// 		if checkList[j] == 0 {
-	// 			allGet = false
-	// 			break
-	// 		}
-	// 	}
-
-	// 	if allGet == true {
-	// 		log.Println("check list:get all")
-	// 		close(c)
-	// 	} else {
-	// 		// log.Println("check list:not get all")
-	// 	}
-	// }
-
-	log.Println("after getting all readme")
+	log.Println("end to wait, after getting all readme")
 
 	return nil
 }
 
+// api examples:
 // link := "Link: <https://api.github.com/user/5940941/starred?per_page=50&page=2>; rel=\"next\", <https://api.github.com/user/5940941/starred?per_page=50&page=5>; rel=\"last\""
-
 //1 link:[<https://api.github.com/user/starred?page=2>; rel="next", <https://api.github.com/user/starred?page=8>; rel="last"]
-
 //8 link:[<https://api.github.com/user/starred?per_page=30&page=1>; rel="first", <https://api.github.com/user/starred?per_page=30&page=7>; rel="prev"]
 //4 <https://api.github.com/user/starred?per_page=30&page=5>; rel="next", <https://api.github.com/user/starred?per_page=30&page=8>; rel="last"
-
 // first, prev都寫了
 // link:[<https://api.github.com/user/starred?per_page=30&page=8>; rel="next", <https://api.github.com/user/starred?per_page=30&page=8>; rel="last", <https://api.github.com/user/starred?per_page=30&page=1>; rel="first", <https://api.github.com/user/starred?per_page=30&page=6>; rel="prev"]
+
 func GetStarredInfo(tokenOwner, token string) ([]*GitHubRepo, error) {
 
 	log.Println("token:", token)

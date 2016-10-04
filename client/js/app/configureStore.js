@@ -7,7 +7,7 @@ import rootSaga from '../sagas';
 export default function configureStore(initialState) {
   const sagaMiddleware = createSagaMiddleware();
 
-  // change to use if (__DEV__) {  later
+  //TODO change to use if (__DEV__) {  later
 
   const store = createStore(
     rootReducer,

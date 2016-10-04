@@ -1,9 +1,9 @@
 import FetchingStatus from './constants';
 
+// import * as ActionTypes from
 import {
   GET_REPOS_STATUS_SUCCEEDED,
 } from './actionTypes';
-
 
 const initialState = {
   error: null,
@@ -24,8 +24,3 @@ export default function repos(state = initialState, action) {
       return state;
   }
 }
-
-// import * as ActionTypes from
-//       return {
-//         isFetching: false,
-//         items:

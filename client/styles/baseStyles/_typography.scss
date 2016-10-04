@@ -1,9 +1,7 @@
 // Typography for material design: http://brm.io/material-design-type/
 body {
   color: #1b1b1b;
-  font-family: 'RobotoDraft', 'Roboto', 'Open Sans', "Segoe UI", Candara, "Trebuchet MS", Verdana, "Verdana Ref", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  text-size-adjust: 100%;
+  font-family: 'Roboto', sans-serif;
 }
 
 h1,
@@ -14,50 +12,4 @@ h5,
 h6,
 p {
   margin: 0;
-}
-
-// by default this will be the equivelant of text-display-2
-h1 {
-  font-size: 45px;
-  font-weight: 400;
-  line-height: 64px;
-}
-
-// by default this will be the equivelant of text-headline
-h2 {
-  font-size: 24px;
-  font-weight: 400;
-  line-height: 44px;
-}
-
-// by default this will be the equivelant of text-subhead
-h3 {
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 32px;
-}
-
-// by default this will be the equivelant of text-menu
-h4 {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 32px;
-}
-
-// not including any other h-tags because you shouldn't ever need 5+
-
-// by default the rest of the elements should be equivelant to text-body
-p,
-a,
-dl,
-input {
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 25px;
-}
-
-a {
-  text-decoration: none;
-  font-weight: 500;
-  color: #239DB8;
 }

@@ -1,4 +1,3 @@
-// import api from './apiService';
 import fetch from 'isomorphic-fetch';
 import elasticsearch from 'elasticsearch';
 
@@ -83,12 +82,3 @@ export default {
   queryToServer,
   pageSize,
 };
-
-// function verifyValidationKey(key) {
-//   return api.get(`/key/${key}`);
-// }
-//
-// function submitValidationForm(email, key, password) {
-//   return api.post(`/key/${key}`, { email, password });
-// }
-//

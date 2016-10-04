@@ -5,8 +5,6 @@ import (
 	"log"
 )
 
-// package singleton
-
 const (
 	NOTSTART = "NotStart"
 	FETCHING = "Fetching"
@@ -23,16 +21,6 @@ type GitHubUser struct {
 	NumOfStarred      int
 	IndicesOfStarrerd int
 }
-
-// go getStarredInfo(account, token)
-
-// _, err = getStarredInfo(profile.Nickname(), profile.Token().AccessToken)
-
-// if err != nil {
-// 	log.Println("cant not get starred info.")
-// }
-
-// func GetStarredInfo(tokenOwner, token string) (map[string]interface{}, error) {
 
 func (user *GitHubUser) GetStarredInfo(token string) {
 
@@ -60,6 +48,3 @@ func (user *GitHubUser) GetStarredInfo(token string) {
 		SetUser(user.Account, *user)
 	}
 }
-
-// 一個表
-// account  status  numOfStarred  indexOfStarred

@@ -4,9 +4,6 @@ import { reducer as formReducer } from 'redux-form';
 
 import repos from './repos';
 
-// import * as devicesReducers from './devicesSN';
-
-// ...devicesReducers,
 const rootReducer = combineReducers({
   routing,
   repos: repos.reducer,

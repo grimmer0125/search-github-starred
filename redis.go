@@ -16,11 +16,6 @@ import (
 // 	maxConnections = flag.Int("max-connections", 10, "Max connections to Redis")
 // )
 
-// REDIS_URL ?
-
-// const url = "ec2-23-23-129-214.compute-1.amazonaws.com:13789"
-// const redisPWD = "p11u0qdj8ed5d78mjfbbgvjfnlk"
-
 var (
 	con redis.Conn
 )
@@ -129,6 +124,8 @@ func close(con redis.Conn) {
 
 func connect() redis.Conn {
 
+	// log.Println("redis init")
+
 	db_url := os.Getenv("REDIS_URL")
 	i := strings.Index(db_url, "@")
 	// log.Println("@ is at:", i)
@@ -139,7 +136,6 @@ func connect() redis.Conn {
 	// log.Println("url:", url)
 	// log.Println("pwd:", redisPWD)
 
-	// log.Println("redis init")
 	c, err := redis.Dial("tcp", url)
 	if err != nil {
 		log.Println("redis dial fail")
@@ -157,10 +153,6 @@ func connect() redis.Conn {
 
 	return c
 }
-
-// func SetUser(account string, user *GitHubUser) error {
-
-// }
 
 func SetUserOrJustUpdateToken(account string, token string) {
 	mux.Lock()
@@ -194,9 +186,6 @@ func SetUser(account string, user GitHubUser) error {
 }
 
 func SetUserToDB(account string, user GitHubUser) error {
-
-	// key8 := "key8"
-	// user := GitHubUser{"1", "1", "1", 8, 3}
 
 	con := connect()
 	defer close(con)
