@@ -10,8 +10,9 @@ It uses OAuth 2, React, Redux, Golang (server side), Elasticsearch, Redis and so
 ## Development locally 
 1. npm install
 2. install go extension of Visual Studio Code. 
-3. change the necessary fields in .vscode/launch.json (YOUR_*** fields)
+3. change the necessary fields in .vscode/launch.json (YOUR_ fields)
 example: 
+~~~ javascript
 {
     "version": "0.2.0",
     "configurations": [
@@ -37,3 +38,4 @@ example:
         }
     ]
 }
+~~~
