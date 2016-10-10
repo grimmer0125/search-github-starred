@@ -46,4 +46,4 @@ It uses OAuth 2, React, Redux, Golang (server side), Elasticsearch, Redis and so
 To be added. 
 
 ### Referenced repository 
-The parameters and the flow about github api calls are from https://github.com/mjmsmith/starredsearch. Also Github official icons are copied from that repository, which is a excellent project and uses Swift on server side to implement the same function, seraching the information on starred repositories without using elasticsearch. 
+The parameters and the flow about github api calls are from https://github.com/mjmsmith/starredsearch, which is a excellent project and uses Swift on server side to implement the same function, seraching the information on starred repositories without using elasticsearch. 
