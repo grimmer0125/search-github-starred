@@ -46,4 +46,4 @@ It uses OAuth 2, React, Redux, Golang (server side), Elasticsearch, Redis and so
 To be added. 
 
 ### Referenced repository 
-The parameters and the flow about github api calls are from https://github.com/mjmsmith/starredsearch, which is a excellent project and uses Swift on server side to implement the same function, seraching the information on starred repositories without using elasticsearch. 
+The parameters and the flow about github api calls are from https://github.com/mjmsmith/starredsearch, which is a excellent project and uses Swift on server side to implement the function seraching the information on starred repositories. This repo is based on that repository and add the feature, fulll-text (elasticserach).  
