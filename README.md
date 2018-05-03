@@ -7,7 +7,7 @@ Please try: https://searchgithub.herokuapp.com.
 
 It uses OAuth 2, React, Redux, Golang (server side), Elasticsearch, Redis and so on. Will open source later. 
 
-## Development locally 
+### Local Development
 1. npm install
 2. install go extension of Visual Studio Code. 
 3. change the necessary fields in .vscode/launch.json (YOUR_ fields), example: 
@@ -76,7 +76,7 @@ Create a new Domain, e.g. searchgithub. Then modify the access policy like this,
 }
 ```
 
-### Deployment the server on Heroku
+### Deployment on Heroku
 
 Heroku' Redis add-on will automatically create the REDIS_URL as the environment config variable, shown in the dashboard setting page. The other variables needed to be added in the Heroku setting page. https://devcenter.heroku.com/articles/heroku-redis#configuring-your-instance indicates that its REDIS_URL may change at any time.
 
