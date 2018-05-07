@@ -17,7 +17,8 @@ import (
 // }
 
 const (
-	awsURL      = "https://search-searchgithub-7c4xubb6ne3t7keszcai7kqi3m.us-west-2.es.amazonaws.com"
+	awsURL = "https://search-search2-rm2lnw4mm2i4oz3ehs3pgpk3o4.us-west-2.es.amazonaws.com"
+
 	githubIndex = "githubrepos" //can not be githubRepos, should lower case !!
 )
 

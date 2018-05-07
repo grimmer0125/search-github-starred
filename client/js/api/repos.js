@@ -8,14 +8,13 @@ if (window.location.hostname === 'localhost') {
 } else if (window.location.hostname === '0.0.0.0') {
   baseURL = 'http://localhost:5000';
 } else {
-  baseURL = window.location.protocol + '//' + window.location.hostname;
+  baseURL = `${window.location.protocol}//${window.location.hostname}`;
 }
 
 function getReposStatus() {
-  const completeURL = baseURL + '/repos';
+  const completeURL = `${baseURL}/repos`;
   // console.log('remote url:', completeURL);
   return fetch(completeURL, { credentials: 'include' }).then(res => {
-
     if (res.status === 401) { // statusText === 'Temporary Redirect') {
       const location = '/login';// res.headers.get('location');
 
@@ -31,7 +30,7 @@ function getReposStatus() {
 
 // can not use .com/ , because the limiation of aws policy
 const client = new elasticsearch.Client({
-  host: 'https://search-searchgithub-7c4xubb6ne3t7keszcai7kqi3m.us-west-2.es.amazonaws.com/githubrepos',
+  host: 'https://search-search2-rm2lnw4mm2i4oz3ehs3pgpk3o4.us-west-2.es.amazonaws.com/githubrepos',
 });
 
 const pageSize = 20;
@@ -46,7 +45,7 @@ function queryToServer(query, account, page, handler) {
     // return a.substr(1, a.length - 2);
   }
 
-  console.log('final query:' + finalQuery + ';type:' + queryType);
+  console.log(`final query:${finalQuery};type:${queryType}`);
 
   client.search({
     // index: 'githubrepos',
@@ -63,13 +62,13 @@ function queryToServer(query, account, page, handler) {
       from: page * pageSize,
       size: pageSize,
     },
-  }).then(function (resp) {
+  }).then((resp) => {
     handler(resp);
     // const hits = resp.hits.hits;
     // console.log('query result:', hits);
   //  debugger;
   //  const ttt = 0;
-  }, function (err) {
+  }, (err) => {
     console.log('query to elasticsearch error!!!');
     console.trace(err.message);
   });
