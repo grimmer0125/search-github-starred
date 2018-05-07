@@ -22,7 +22,7 @@ type GitHubUser struct {
 	IndicesOfStarrerd int
 }
 
-func (user *GitHubUser) GetStarredInfo(token string) {
+func (user *GitHubUser) IndexStarredInfo(token string) {
 
 	user.Status = FETCHING
 	SetUser(user.Account, *user)

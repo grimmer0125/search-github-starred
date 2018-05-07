@@ -233,7 +233,7 @@ func getReposHandler(c *gin.Context) {
 
 					if user.Status == NOTSTART {
 						// TODO: if two clients use the same account simutaneously, still have race condition problems
-						go user.GetStarredInfo(tokenInCookie)
+						go user.IndexStarredInfo(tokenInCookie)
 
 					}
 
