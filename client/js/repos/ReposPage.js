@@ -90,7 +90,7 @@ class ReposPage extends React.Component {
     const nextItems = [];
     const checkDict = {};
     for (const hitData of hitsList) {
-      const hit = hitData['_source']; // elasticsearch type, algo: hit = hitData
+      const hit = hitData._source; // elasticsearch type, algo: hit = hitData
       if (checkDict.hasOwnProperty(hit.repoURL) === false) {
         const item = { url: hit.repoURL,
           id: hit.repoURL, desc: hit.description, repofullName: hit.repofullName };
@@ -168,7 +168,7 @@ class ReposPage extends React.Component {
             {nextOperation}
             <RepoList items={this.state.hits} />
           </div>
-        );
+    );
   }
 
   componentWillMount() {
@@ -192,7 +192,7 @@ class ReposPage extends React.Component {
     clearTimeout(this.timeout);
 
     if (!this.hasData()) {
-      console.log('start timer in receive props ');
+      console.log('Polling indexing status');
       this.startPoll();
     }
     // else {
@@ -270,7 +270,7 @@ class ReposPage extends React.Component {
     let statusStr = '';
 
     // if (numOfStarred > 0) {
-    statusStr = 'Total: ' + numOfStarred + '. Start to full-text search your starred repos.';
+    statusStr = `Total: ${numOfStarred}. Start to full-text search your starred repos.`;
     // } else {
     //   statusStr = 'Indexing is finished, start to query';
     // }
@@ -309,7 +309,7 @@ class ReposPage extends React.Component {
         break;
       case FetchingStatus.INDEXING:
         if (numOfStarred > 0) {
-          statusStr = 'It is indexing ' + numOfStarred + ' repos, wait a moment...';
+          statusStr = `It is indexing ${numOfStarred} repos, wait a moment...`;
         } else {
           statusStr = 'It is indexing, wait a moment...';
         }
