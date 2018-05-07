@@ -127,12 +127,10 @@ class ReposPage extends React.Component {
   }
 
   handleSubmit(e) {
-    console.log('handleSubmit !!! ');
     e.preventDefault();
 
     if (this.state.textOnQueryInput !== '') {
       if (this.props.repos.githubAccount) {
-        console.log('Start to query !!!!!!');
         this.state.queryStats = QueryStatus.QUERYING;
 
         api.queryToServer(this.state.textOnQueryInput,
@@ -184,9 +182,7 @@ class ReposPage extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    console.log('componentWillReceiveProps');
     if (this.props.repos !== nextProps.repos) {
-      console.log('different Props');
 
       // Optionally do something with data
       // if (!nextProps.isFetching) {
@@ -252,12 +248,11 @@ class ReposPage extends React.Component {
 
   startPoll() {
     const { dispatch } = this.props;
-    // console.log('status timer runs !!!');
 
+    // console.log('status timer runs !!!');
     // dispatch({ type: FETCH_STARRRED_STATUS, payload: { text: 'Do something.' } });
 
     this.timeout = setTimeout(() => {
-      console.log('timer runs !!!');
       dispatch({ type: FETCH_STARRRED_STATUS }); // , payload: { text: 'Do something.' }
     }, 2000);
   }
@@ -334,11 +329,8 @@ class ReposPage extends React.Component {
 
   render() {
     if (this.hasData()) {
-      console.log('has data');
       return this.renderComponents();
     }
-
-    console.log('has no data');
 
     return this.renderLoadingScreen();
   }
@@ -349,14 +341,9 @@ ReposPage.propTypes = {
   dispatch: React.PropTypes.func,
 };
 
-function test(state) {
-  console.log('test test');
-  return state.repos;
-}
-
 export function mapStateToProps(state) {
   return {
-    repos: test(state),
+    repos: state.repos,
   };
 }
 

@@ -13,7 +13,6 @@ const initialState = {
 };
 
 export default function repos(state = initialState, action) {
-  console.log('into reducer:', action.type);
   switch (action.type) {
     case GET_REPOS_STATUS_SUCCEEDED:
       // console.log('papyload:', action.payload.status);

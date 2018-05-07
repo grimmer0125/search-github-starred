@@ -13,10 +13,8 @@ if (window.location.hostname === 'localhost') {
 
 function getReposStatus() {
   const completeURL = baseURL + '/repos';
-  console.log('remote url:', completeURL);
+  // console.log('remote url:', completeURL);
   return fetch(completeURL, { credentials: 'include' }).then(res => {
-    console.log('get the response');
-
 
     if (res.status === 401) { // statusText === 'Temporary Redirect') {
       const location = '/login';// res.headers.get('location');

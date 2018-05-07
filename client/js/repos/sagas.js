@@ -25,7 +25,6 @@ import {
 
 // Our worker Saga:
 export function* fetchStatusAsync(action) {
-  console.log('into fetch statys middleware async');
 // step 1
 // async part, e.g. fetch
 // const user = yield call(Api.fetchUser, action.payload.userId);
@@ -33,16 +32,12 @@ export function* fetchStatusAsync(action) {
 
   const res = yield call(api.getReposStatus);
 
-  // debugger;
-  console.log('get res in saga:', res);
-  //
   let dataJSON = null;
 
   try {
     dataJSON = JSON.parse(res);
-    console.log('response json:', dataJSON);
   } catch (e) {
-    console.log('not json');
+    console.log('not json, exception:', e);
   }
 
   // if (res === 'get your repos request !!!!!!') {
