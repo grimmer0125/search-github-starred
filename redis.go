@@ -125,13 +125,23 @@ func close(con redis.Conn) {
 func connect() redis.Conn {
 
 	// log.Println("redis init")
+	url := ""
+	redisPWD := ""
 
 	db_url := os.Getenv("REDIS_URL")
 	i := strings.Index(db_url, "@")
 	// log.Println("@ is at:", i)
-	j := strings.Index(db_url, "h:")
-	redisPWD := db_url[(j + 2):i]
-	url := db_url[(i + 1):len(db_url)]
+
+	if i > -1 {
+		url = db_url[(i + 1):len(db_url)]
+
+		j := strings.Index(db_url, "h:")
+		if j > -1 {
+			redisPWD = db_url[(j + 2):i]
+		}
+	} else {
+		url = db_url[8:len(db_url)]
+	}
 
 	// log.Println("url:", url)
 	// log.Println("pwd:", redisPWD)
@@ -142,11 +152,14 @@ func connect() redis.Conn {
 
 		return nil //nil, err
 	}
-	if _, err := c.Do("AUTH", redisPWD); err != nil {
-		c.Close()
-		log.Println("redis auth fail")
 
-		return nil //nil, err
+	if redisPWD != "" {
+		if _, err := c.Do("AUTH", redisPWD); err != nil {
+			c.Close()
+			log.Println("redis auth fail")
+
+			return nil //nil, err
+		}
 	}
 
 	// log.Println("redis init ok !!!")
@@ -188,6 +201,10 @@ func SetUser(account string, user GitHubUser) error {
 func SetUserToDB(account string, user GitHubUser) error {
 
 	con := connect()
+	if con == nil {
+		fmt.Println("redis connection fails")
+		return errors.New("You can't set user to redis due to no redis connection")
+	}
 	defer close(con)
 	value, _ := json.Marshal(user)
 	_, err := con.Do("SET", account, value)
@@ -216,6 +233,10 @@ func GetUser(account string) (*GitHubUser, error) {
 func GetUserFromDB(account string) (*GitHubUser, bool) {
 
 	con := connect()
+	if con == nil {
+		fmt.Println("redis connection fails")
+		return nil, false
+	}
 	defer close(con)
 	// log.Println("try to get user from db:", account)
 	value, err := redis.Bytes(con.Do("GET", account))
