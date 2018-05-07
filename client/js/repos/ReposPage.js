@@ -192,7 +192,7 @@ class ReposPage extends React.Component {
     clearTimeout(this.timeout);
 
     if (!this.hasData()) {
-      console.log('Polling indexing status');
+      // console.log('Polling indexing status');
       this.startPoll();
     }
     // else {

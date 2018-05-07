@@ -48,11 +48,15 @@ It uses OAuth 2, React, Redux, Golang (server side), Elasticsearch, Redis and so
 
 The keypoint is to create a AMI role to have a permission to write to AWS' Elasticsearch, then only give anonymous users the read permission.
 
-#### Set up an AMI to have the permission, CloudSearch Full access, at least
+#### Set up an AWS AMI
+
+This project uses [Resource-based Policies](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-ac.html#es-ac-types-resource), so it does not need to add any permission to this AMI user.
 
 #### Set up Elasticsearch
 
-Create a new Domain, e.g. `searchgithub`. Then modify the access policy like this,
+Launch a Elasticsearch service and choose version 2.3. The current go API is not updated to the latest Elasticsearch version yet.
+
+Then create a new Domain, e.g. `searchgithub`. Then modify the access policy like this,
 
 ```
 {
@@ -78,11 +82,13 @@ Create a new Domain, e.g. `searchgithub`. Then modify the access policy like thi
 }
 ```
 
-`githubrepos` is the fixed elasticsearch index in this project. The first statement is let browser have read permission, and the the second is to let the server have the write permission if it has AWS access key.
+`githubrepos` is the fixed Elasticsearch `index` in this project. The first statement is let browser have read permission, and the the second is to let the server have the write permission if it has AWS access key of the AMI user.
 
-#### Modify the elasticsearch setting in redis.go and repos.js
+The account name of each user will be used as the `type` of Elasticsearch.
 
-redis.go:
+#### Modify the Elasticsearch setting in indexAPI.go and repos.js
+
+indexAPI.go:
 ```
 awsURL = "AWS_ELASTICSEARCH_DOMAIN_ENDPOINT"
 ```
