@@ -102,6 +102,14 @@ const client = new elasticsearch.Client({
 
 `AWS_ELASTICSEARCH_DOMAIN_ENDPOINT` could be found out in AWS dashboard. E.g. `https://search-searchgithub-XXXXXXXXXXXXXXXXXXXXXXXXXX.us-west-2.es.amazonaws.com`
 
+**use locally dockerized Elasticsearch**
+
+```
+docker run -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" grimmer0125/elasticsearch:2.3
+```
+
+Then use `http://localhost:9200` as the above `AWS_ELASTICSEARCH_DOMAIN_ENDPOINT` in the codes. 
+
 ### Deployment on Heroku
 
 Heroku' Redis add-on will automatically create the REDIS_URL as the environment config variable, shown in the dashboard setting page. The other variables needed to be added in the Heroku setting page. https://devcenter.heroku.com/articles/heroku-redis#configuring-your-instance indicates that its REDIS_URL may change at any time.
