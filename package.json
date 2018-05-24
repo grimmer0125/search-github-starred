@@ -49,5 +49,5 @@
     "build-client": "./node_modules/.bin/webpack --config ./config/webpack.config.dev.js"
   },
   "author": "",
-  "license": "ISC"
+  "license": "MIT"
 }
