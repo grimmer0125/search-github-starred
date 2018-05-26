@@ -178,7 +178,7 @@ class ReposPage extends React.Component {
   }
 
   componentDidMount() {
-
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
   }
 
   componentWillReceiveProps(nextProps) {
@@ -279,6 +279,12 @@ class ReposPage extends React.Component {
 
     return (
       <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
+        <ins className="adsbygoogle"
+          style={{ display: 'block' }}
+          data-ad-client="ca-pub-1240343082911496"
+          data-ad-slot="4365785532"
+          data-ad-format="auto"
+        />
         <div>
           <a href="https://grimmer.netlify.com/">About me</a>
         </div>
@@ -320,6 +326,12 @@ class ReposPage extends React.Component {
 
     return (
       <div className="flex-column layout-column-start-center" style={{ width: '100%' }}>
+        <ins className="adsbygoogle"
+          style={{ display: 'block' }}
+          data-ad-client="ca-pub-1240343082911496"
+          data-ad-slot="4365785532"
+          data-ad-format="auto"
+        />
         <div className="loading-text">
           {statusStr}
         </div>
@@ -328,6 +340,11 @@ class ReposPage extends React.Component {
   }
 
   render() {
+    // ads with no set-up
+    // <AdSense.Google
+    //   client="ca-pub-1240343082911496"
+    //   slot="4365785532"
+    // />;
     if (this.hasData()) {
       return this.renderComponents();
     }
