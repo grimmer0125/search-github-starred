@@ -1,5 +1,5 @@
 # search-github-starred
-Full-Text Search the readme, description, homepage and URL of your GitHub starred repository.
+Full-Text Search the readme, description, homepage and URL of your GitHub starred repository. ~~Try https://searchgithub.herokuapp.com~~ which is kept alive by synthetics of newrelic. **Update:** Since the AWS server is not paid so this site is not working. 
 
 This is the missing function on GitHub. GitHub site only supplies the function to search repo-descripton and also only exact phrase match. This site supports both types. Type "A B" for phrase A B and type A B for sequence not important case.
 
