@@ -20,7 +20,7 @@
     "html-webpack-plugin": "^2.22.0",
     "isomorphic-fetch": "^2.2.1",
     "material-ui": "^0.15.2",
-    "node-sass": "^3.8.0",
+    "node-sass": "^7.0.0",
     "normalize-scss": "^5.0.3",
     "octicons": "^4.4.0",
     "postcss-loader": "^0.9.1",
